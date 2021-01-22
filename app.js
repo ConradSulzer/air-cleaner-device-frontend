@@ -1,8 +1,11 @@
 const app = {
+    data: {},
+
     init: function () {
         console.log('app initialized')
 
         this.getData();
+        console.log(sections)
     },
 
     getData: async function () {
@@ -19,7 +22,15 @@ const app = {
 
         const data = await response.json();
 
-        console.log('JSON', data);
+        this.data = data;
+
+        console.log('THIS DATA', this.data)
+    }
+}
+
+const view = {
+    render: function () {
+
     }
 }
 
