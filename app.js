@@ -72,10 +72,12 @@ const app = {
         //Adding changed class and activating "submit changes" button
         if(currentValue !== oldValue) {
             input.classList.add('input-changed');
-            button.removeAttribute('disabled')
+            button.removeAttribute('disabled');
+            button.classList.add('disabled')
         }else if (currentValue === oldValue) {
             input.classList.remove('input-changed');
             button.setAttribute('disabled', true)
+            button.classList.remove('disabled')
         }
     },
 
@@ -166,7 +168,10 @@ const view = {
 
     render: function () {
         const sections = this.sections()
-        const App = document.getElementById('App');
+        const App = document.createElement('div');
+        App.id = 'App';
+        document.querySelector('.container').appendChild(App);
+        
 
         sections.forEach((section) => {
             console.log();
@@ -180,7 +185,7 @@ const view = {
 
     createSection: function (data) {
         const section = document.createElement('div')
-        section.className = section;
+        section.className = 'section';
 
         // Title bar
         const titleBar = document.createElement('div');
@@ -189,15 +194,17 @@ const view = {
 
         // Title bar contents (title and "icon")
         const title = document.createElement('p');
-        title.className = 'title-bar';
+        title.className = 'title';
         title.innerHTML = data.title;
         titleBar.appendChild(title);
         const expandIcon = document.createElement('p');
-        expandIcon.innerHTML = '+'
+        expandIcon.innerHTML = '+';
+        expandIcon.className = 'expand-icon'
         titleBar.appendChild(expandIcon);
 
         //Collapsed section
         const collapsedSection = document.createElement('div');
+        collapsedSection.className = 'collapsed-section';
         section.appendChild(collapsedSection);
 
         //if it has editable inputs create the form
@@ -236,7 +243,7 @@ const view = {
         const button = document.createElement('button');
         button.innerHTML = 'Submit Changes';
         button.type = 'button';
-        button.className = 'btn btn-submit-changes';
+        button.className = 'btn btn-submit-changes disabled';
         button.setAttribute('disabled', true);
         form.appendChild(button);
 
@@ -245,10 +252,12 @@ const view = {
 
     createInput: function (data) {
         const inputDiv = document.createElement('div');
+        inputDiv.className = 'input-div';
 
         //Create input label
         const label = document.createElement('label');
         label.htmlFor = data.label.toLowerCase();
+        label.innerHTML = data.label;
 
         inputDiv.appendChild(label);
 
@@ -266,10 +275,12 @@ const view = {
 
     createSelect: function (data) {
         const selectDiv = document.createElement('div');
+        selectDiv.className = 'input-div';
 
         //Create select label
         const label = document.createElement('label');
         label.htmlFor = data.label.toLowerCase();
+        label.innerHTML = data.label;
         selectDiv.appendChild(label);
 
         //Create select
@@ -277,6 +288,7 @@ const view = {
         select.id = data.label.toLowerCase();
         select.name = data.label.toLowerCase();
         select.type = 'text';
+        select.setAttribute('data-path', data.dataPath)
 
         //Create select options
         data.options.forEach((optionString) => {

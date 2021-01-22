@@ -7,6 +7,16 @@ body {
     background: whitesmoke;
 }
 
+.container {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#App {
+    margin-top: 16px;
+}
+
 /* Loader ***************/
 #dark-overlay {
     background: #242527;
@@ -90,4 +100,75 @@ body {
       -webkit-transform: rotate(360deg);
       transform: rotate(360deg);
     }
-  }
+}
+
+/* Menu Sections ***********************/
+.section {
+    border-radius: 4px;
+    box-shadow: 1px 1px 10px #B3B1B2;
+}
+
+.title-bar {
+    background: #242527;
+    padding: 1px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 4px 4px 0 0;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 500;
+    margin-left: 10px;
+    color: #ffce08;
+}
+
+.expand-icon {
+    font-size: 36px;
+    margin: 0;
+    padding: 12px;
+    color: #ffce08;
+}
+
+.collapsed-section {
+    color: #242527;
+    padding: 16px;
+    border: 5px solid #242527;
+    border-radius: 0px 0px 4px 4px;
+    background: white;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.btn-submit-changes {
+    padding: 10px;
+    max-width: 200px;
+    background: #ffce08;
+    border: none;
+    color: #242527;
+    font-weight: 600;
+    margin-top: 16px;
+    border-radius: 2px;
+    margin-left: auto;
+}
+
+.btn-submit-changes.disabled {
+    background: #f1e5b5;
+    color: #99999a;
+    
+}
+
+.input-div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
