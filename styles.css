@@ -1,6 +1,7 @@
 /* Setup *****************/
 body {
     font-family: Helvetica, Arial, sans-serif;
+    width: 100%;
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
@@ -15,6 +16,19 @@ body {
 
 #App {
     margin-top: 16px;
+}
+
+/* Header ************* */
+#header {
+  background: #242527;
+  width: 100%;
+  height: 60px;
+}
+
+.slanted-header {
+  background: linear-gradient(300deg, transparent 30px, #ffce08 30px);
+  height: 60px;
+  width: 150px;
 }
 
 /* Loader ***************/
@@ -130,7 +144,7 @@ body {
     color: #ffce08;
 }
 
-.collapsed-section {
+.section-body {
     color: #242527;
     padding: 16px;
     border: 5px solid #242527;
@@ -138,37 +152,40 @@ body {
     background: white;
 }
 
+/* Form and inputs ****************/
 form {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
 }
 
 label {
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.btn-submit-changes {
-    padding: 10px;
-    max-width: 200px;
-    background: #ffce08;
-    border: none;
-    color: #242527;
-    font-weight: 600;
-    margin-top: 16px;
-    border-radius: 2px;
-    margin-left: auto;
-}
-
-.btn-submit-changes.disabled {
-    background: #f1e5b5;
-    color: #99999a;
-    
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .input-div {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+/* Buttons ********************/
+.btn-submit-changes {
+  padding: 10px;
+  max-width: 200px;
+  background: #ffce08;
+  border: none;
+  color: #242527;
+  font-weight: 600;
+  margin-top: 16px;
+  border-radius: 2px;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.btn-submit-changes.disabled {
+  background: #f1e5b5;
+  color: #99999a;
+  cursor: default;
 }
