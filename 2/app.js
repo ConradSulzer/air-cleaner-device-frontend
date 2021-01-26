@@ -320,28 +320,36 @@ const view = {
     },
 
     populateSchedule: function () {
+        // Get all the programs
         const programs = app.formatProgramData(app.deviceData.prog);
+        console.log('programs', programs)
+        // Grab all the program bodies
+        const programBodies = document.querySelectorAll('.day-body');
+        // Get the key for each day
+        const days = Object.keys(programs)
+        console.log('days', days);
+        console.log('program bodies', programBodies)
+        // Add existing programs to their respective body
+        days.forEach((day) => {
+            // What day are we on
+            console.log('day', day);
+            //Get all programs for that day
+            const dayProgs = programs[day];
+            console.log('day progs', dayProgs)
+            // Get that day's body
+            const dayBody = document.getElementById(day);
+            console.log('day body', dayBody);
+            // For each day program create a program div
+            dayProgs.forEach((program) => {
+                console.log(program);
+            });
 
+        });
     },
 
-    createScheduleLine: function ({ mode, on, off, speed, progIndex, abrev }) {
-        const lineDiv = document.createElement('div');
-        lineDiv.className = 'line-div';
+    createprogramDiv: function (dayBody, day, ) {
 
-
-
-        // const inputDiv1 = document.createElement('div');
-        // inputDiv1.className = 'input-div';
-        // lineDiv.appendChild (inputDiv1);
-        // const startInputLabel = document.createElement('label');
-        // startInputLabel.htmlFor = `${progIndex}${abrev}`
-        // const startInput = document.createElement('input');
-        // startInput.id = `${progIndex}${abrev}`;
-        // lineDiv.appendChild(startInputLabel);
-        // lineDiv.appendChild(startInput);
-
-        return lineDiv
-    }
+    },
 }
 
 app.init();
