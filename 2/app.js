@@ -336,8 +336,7 @@ const view = {
             //Get all programs for that day
             const dayProgs = programs[day];
             console.log('day progs', dayProgs)
-            // Get that day's body
-            const dayBody = document.getElementById(day);
+            
             console.log('day body', dayBody);
             // For each day program create a program div
             dayProgs.forEach((program) => {
