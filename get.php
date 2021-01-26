@@ -7,9 +7,9 @@ $allSettings['success'] = true;
 
 // ----- Please re-work the prog data type to line up with whatever you have in code ------ //
 $allSettings['prog'][0]['Su']['mode'] = 0; // 0 = off, 1 = on, 2 = program
-$allSettings['prog'][0]['Su']['on']  = 900; //9am
+$allSettings['prog'][0]['Su']['on']  = 0000; //9am
 $allSettings['prog'][0]['Su']['off']  = 1700; //5pm
-$allSettings['prog'][0]['Su']['speed']  = 0; // 0-10
+$allSettings['prog'][0]['Su']['speed']  = 5; // 0-10
 
 $allSettings['prog'][0]['Mo']['mode'] = 2; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][0]['Mo']['on']  = 900; //9am
@@ -24,7 +24,7 @@ $allSettings['prog'][0]['Tu']['speed']  = 5; // 0-10
 $allSettings['prog'][0]['We']['mode'] = 2; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][0]['We']['on']  = 900; //9am
 $allSettings['prog'][0]['We']['off']  = 1700; //5pm
-$allSettings['prog'][0]['We']['speed']  = 5; // 0-10
+$allSettings['prog'][0]['We']['speed']  = 1; // 0-10
 
 $allSettings['prog'][0]['Th']['mode'] = 2; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][0]['Th']['on']  = 900; //9am
@@ -59,7 +59,7 @@ $allSettings['prog'][1]['Tu']['speed']  = 5; // 0-10
 $allSettings['prog'][1]['We']['mode'] = 2; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][1]['We']['on']  = 1230;//9am
 $allSettings['prog'][1]['We']['off']  = 1130; //5pm
-$allSettings['prog'][1]['We']['speed']  = 5; // 0-10
+$allSettings['prog'][1]['We']['speed']  = 2; // 0-10
 
 $allSettings['prog'][1]['Th']['mode'] = 2; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][1]['Th']['on']  = 1230;//9am
@@ -94,17 +94,12 @@ $allSettings['prog'][2]['Tu']['speed']  = 5; // 0-10
 $allSettings['prog'][2]['We']['mode'] = 0; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][2]['We']['on']  = 900; //9am
 $allSettings['prog'][2]['We']['off']  = 1700; //5pm
-$allSettings['prog'][2]['We']['speed']  = 5; // 0-10
+$allSettings['prog'][2]['We']['speed']  = 3; // 0-10
 
 $allSettings['prog'][2]['Th']['mode'] = 0; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][2]['Th']['on']  = 900; //9am
 $allSettings['prog'][2]['Th']['off']  = 1700; //5pm
 $allSettings['prog'][2]['Th']['speed']  = 5; // 0-10
-
-$allSettings['prog'][2]['Fr']['mode'] = 0; // 0 = off, 1 = on, 2 = program
-$allSettings['prog'][2]['Fr']['on']  = 900; //9am
-$allSettings['prog'][2]['Fr']['off']  = 1700; //5pm
-$allSettings['prog'][2]['Fr']['speed']  = 5; // 0-10
 
 $allSettings['prog'][2]['Sa']['mode'] = 0; // 0 = off, 1 = on, 2 = program
 $allSettings['prog'][2]['Sa']['on']  = 900; //9am
@@ -120,20 +115,20 @@ $allSettings['wifi']['subnet'] = '255.255.255.0';
 $allSettings['wifi']['gateway'] = '192.168.1.1';
 $allSettings['wifi']['dns'] = '8.8.8.8';
 
-$allSettings['timer']['mode'] = "off"; // on, off
-$allSettings['timer']['hrs'] = 1; // should these be combined into a single variable?
-$allSettings['timer']['min'] = 30;
+$allSettings['timer']['mode'] = "on"; // on, off
+$allSettings['timer']['hrs'] = 2; // should these be combined into a single variable?
+$allSettings['timer']['min'] = 35;
 
 
-$allSettings['motor']['speed'] = 5; // 0 off 1-9 speeds ?
-$allSettings['motor']['hours'] = 10;
+$allSettings['motor']['speed'] = 3; // 0 off 1-9 speeds ?
+$allSettings['motor']['hours'] = 8;
 
 
-$allSettings['filter']['life'] = 50; // 0-100 %
-$allSettings['filter']['hours'] = 12; // number of hours on the filter since change
+$allSettings['filter']['life'] = 31; // 0-100 %
+$allSettings['filter']['hours'] = 27; // number of hours on the filter since change
 $allSettings['filter']['replace']['year'] = 21; // year of replacement.. will be ~6mo after install
-$allSettings['filter']['replace']['month'] = 04; // month of replacement.. will be ~6mo after install
-$allSettings['filter']['replace']['day'] = 01; // day of replacement.. will be ~6mo after install
+$allSettings['filter']['replace']['month'] = 07; // month of replacement.. will be ~6mo after install
+$allSettings['filter']['replace']['day'] = 14; // day of replacement.. will be ~6mo after install
 
 $allSettings['rtc']['year'] = 21;
 $allSettings['rtc']['month'] = 01;

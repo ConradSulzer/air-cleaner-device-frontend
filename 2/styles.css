@@ -161,6 +161,7 @@ p {
 }
 
 .section-body {
+    position: relative;
     color: #242527;
     padding: 16px;
     background: white;
@@ -198,7 +199,7 @@ label {
 }
 
 /* Buttons ********************/
-.btn-submit-changes {
+.btn {
   padding: 10px;
   max-width: 200px;
   background: #ffce08;
@@ -211,7 +212,7 @@ label {
   cursor: pointer;
 }
 
-.btn-submit-changes.disabled {
+.btn.disabled {
   background: #f1e5b5;
   color: #99999a;
   cursor: default;
@@ -220,6 +221,10 @@ label {
 .btn-div {
     position: absolute;
     bottom: 10;
+}
+
+.btn-sched {
+    bottom: 16;
 }
 
 /* Scheduler ****************/
@@ -232,20 +237,71 @@ label {
     font-size: 17px;
     width: 100%;
     background: #242527;
-    padding: 3px 10px;
+    padding: 12px 10px;
     color: #ffce08;
     box-sizing: border-box;
 }
 
-.day-body {
-    display: none;
+.day-label.active {
+    padding: 3px 10px;
 }
 
 .day-label span {
     float: right;
 }
 
+.day-body {
+    display: none;
+}
+
 .add-new {
     color: green;
     margin-top: 6px;
+}
+
+.on-off-block {
+    display: flex;
+}
+
+.time-select-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.prog-div {
+    padding: 5px;
+    border: solid 1px #ffce08;
+    margin-top: 8px;
+}
+
+.prog-times {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.prog-settings {
+    display: flex;
+    justify-content: space-between;
+}
+
+.prog-set-block {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+.prog-set-block select {
+    width: 120px;
+}
+
+.add-new-prog {
+    color: green;
+    margin-top: 15px;
+    float: right;
+    cursor: pointer;
+}
+
+.prog-delete {
+    color: red;
 }

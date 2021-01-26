@@ -1,7 +1,10 @@
 const app = {
     deviceData: {},
+    oneTo12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    minutes: ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'],
     getURL: "http://127.0.0.1/aircontrol/get.php",
-    setURL: "http://127.0.0.1/aircontrol/set.php",
+    // Make sure there is a '?' at the end of the setURL string since it will be a query string.
+    setURL: "http://127.0.0.1/aircontrol/set.php?",
 
     init: async function () {
         console.log('app initialized')
@@ -19,19 +22,22 @@ const app = {
     eventListeners: function () {
         // Watch for changes to input/selector values
         const fields = document.querySelectorAll('input, select');
-        fields.forEach((field) => {
-            field.addEventListener('input', app.checkValue)
-        })
+        fields.forEach(field => field.addEventListener('input', app.checkValue))
 
+        //Watch for click on save/set buttons
         const submitButtons = document.querySelectorAll('.btn-submit-changes');
-        submitButtons.forEach((button) => {
-            button.addEventListener('click', app.submitChanges)
-        })
+        submitButtons.forEach(button => button.addEventListener('click', app.submitChanges))
 
+        // Toggle days in the schedule
         const dayLabels = document.querySelectorAll('.day-label');
-        dayLabels.forEach((label) => {
-            label.addEventListener('click', app.openDay)
-        })
+        dayLabels.forEach(label => label.addEventListener('click', app.openDay))
+
+        //Watch for changes to the schule
+        const dayBodies = document.querySelectorAll('.day-body');
+        dayBodies.forEach(day => day.addEventListener('change', app.scheduleChanges))
+
+        //Watch for click on scheduler save button
+        document.querySelector('.btn-sched').addEventListener('click', app.getChangedSchedule);
     },
 
     getData: async function () {
@@ -67,65 +73,130 @@ const app = {
         //Check to see if the value has changed and if true add "changed" class to the input
         // and activate the "Submit Changes" button
         const input = evt.target
-        const currentValue = input.value;
-        // const dataPath = input.dataset.path.split(',');
-        // const oldValue = app.deviceData[dataPath[0]][dataPath[1]];
-        const oldValue = input.dataset.value;
-        console.log(oldValue)
         const button = input.parentElement.parentElement.querySelector('button');
+        const currentValue = input.value;
+        const oldValue = input.dataset.value;
+
+        //Check to see if it was a change to the schedule
+        if (input.closest('.day-div')) {
+            return this.scheduleChanged(evt);
+        }
 
         //Adding changed class and activating "submit changes" button
         if (currentValue !== oldValue) {
             input.classList.add('input-changed');
-            button.removeAttribute('disabled');
-            button.classList.remove('disabled')
+            const areChangedInputs = input.closest('form').querySelectorAll('.input-changed').length
+            if (areChangedInputs === 1) {
+                button.removeAttribute('disabled');
+                button.classList.remove('disabled');
+            }
         } else if (currentValue === oldValue) {
             input.classList.remove('input-changed');
-            button.setAttribute('disabled', true)
-            button.classList.add('disabled')
+            const areChangedInputs = input.closest('form').querySelectorAll('.input-changed').length
+            if (areChangedInputs === 0) {
+                button.setAttribute('disabled', true)
+                button.classList.add('disabled')
+            }
+        }
+    },
+
+    scheduleChanges: function (evt) {
+        //Check to see if the value has changed and if true add "changed" class to the input
+        // and activate the "Submit Changes" button
+        const input = evt.target
+        const progDiv = input.closest('.day-div');
+        const button = input.closest('.section-body').querySelector('button');
+        // see if there are any other changed program for different days
+        const currentValue = input.value;
+        const oldValue = input.dataset.value;
+
+        if (currentValue !== oldValue) {
+            input.classList.add('input-changed');
+            progDiv.classList.add('sched-changed');
+            const areChangedProgs = document.querySelectorAll('.sched-changed').length
+            if (areChangedProgs === 1) {
+                button.removeAttribute('disabled');
+                button.classList.remove('disabled')
+            }
+        } else if (currentValue === oldValue) {
+            input.classList.remove('input-changed');
+            progDiv.classList.remove('sched-changed');
+            const areChangedProgs = document.querySelectorAll('.sched-changed').length
+            if (areChangedProgs === 0) {
+                button.setAttribute('disabled', true)
+                button.classList.add('disabled')
+            }
         }
     },
 
     submitChanges: function (evt) {
         evt.preventDefault();
-        //Set all buttons to disabled
-        const buttons = document.querySelectorAll('button');
-        for (var i = 0; i < buttons.length; i++) {
-            buttons[i].setAttribute('disabled', true);
-            buttons[i].classList.add('disabled');
+        const target = evt.target;
+        const parentForm = target.closest('form');
+        let url = '';
+
+        if (!parentForm) {
+            url = app.getQueryStringScheduler(target);
+        } else {
+            url = app.getChangedTime(target);
         }
 
-        const data = app.getChangedValues(evt.target);
+        console.log(url);
+        // SEND GET REQUEST
 
-        json = JSON.stringify(data);
+        // RENDER SUCCESS/FAIL MESSAGE
 
-        // Remember to update data-value if server fetch is sucessful
-
-        console.log(json);
+        // Update values individually to new values or update in app.devicedata and rerender page or fetch new get.php and rerender.
     },
 
-    getChangedValues: function (el) {
-        const changedInputs = el.parentElement.querySelectorAll('.input-changed');
-        const newData = {};
+    getQueryString: function (el) {
+        const changedInputs = el.closest('form').querySelectorAll('.input-changed');
+        const strings = [];
 
         for (var i = 0; i < changedInputs.length; i++) {
-            const dataPath = changedInputs[i].dataset.path.split(',');
-            const newValue = changedInputs[i].value;
-            // Set up path in object
-            newData[dataPath[0]] = {};
-            newData[dataPath[0]][dataPath[1]] = newValue;
-            console.log('New Value', newValue);
+            stringPath = this.convertToPathString(changedInputs[i].dataset.path);
+            const query = `${stringPath}=${changedInputs[i].value.replace(' ', '%20')}`
+            strings.push(query);
         }
 
-        return newData
+        const url = strings.reduce((a, b, i) => {
+            if(i === 0) {
+                return a + b
+            } else {
+                return a + '&' + b
+            }
+        }, app.setURL);
+
+        return url;
     },
 
-    findDay: function (abrev) {
-        const daysAbrev = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const regx = new RegExp(`^${abrev}`, 'g');
-        const found = daysAbrev.find(element => regx.test(element));
-        return found;
+    getQueryStringScheduler: function (string) {
+        var array = string.split('.');
+        var length = array.length;
+        var pathString = '';
+
+        for (var i = 2; i < length; i++) {
+            if (i === 2) {
+                pathString = `${array[i]}`;
+            } else {
+                pathString = pathString + `[${array[i]}]`
+            }
+        }
+
+        return pathString;
     },
+
+    updateTime: function (evt) {
+
+    },
+
+    // Marked for deletion
+    // findDay: function (abrev) {
+    //     const daysAbrev = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    //     const regx = new RegExp(`^${abrev}`, 'g');
+    //     const found = daysAbrev.find(element => regx.test(element));
+    //     return found;
+    // },
 
     formatProgramData: function (data) {
         //Instead of the original format of programNumber->day->program.
@@ -172,14 +243,13 @@ const app = {
         minutes = parseInt(minutesString);
 
         if (rawHour > 12) {
-            hour = rawHour - 12;
-            ampm = 'pm';
-        }
-
-        timeObj = {
-            hour,
-            minutes,
-            ampm
+            timeObj.hour = rawHour - 12;
+            timeObj.minutes = minutes
+            timeObj.ampm = 'pm';
+        } else {
+            timeObj.hour = rawHour;
+            timeObj.minutes = minutes;
+            timeObj.ampm = 'am';
         }
 
         return timeObj;
@@ -187,7 +257,6 @@ const app = {
 
     convertTimeTo24: function ({ hour, minute, ampm }) {
         let time = parseInt(hour.toString() + minute.toString());
-
         if (ampm === 'pm') {
             hour = hour + 12;
 
@@ -203,15 +272,13 @@ const app = {
 
     openDay: function (evt) {
         let target = evt.target;
-        console.log(target);
         //Get all the day divs so we can hide/show the ones not clicked
         const dayDivs = document.querySelectorAll('.day-div');
 
         //Check to see if we have the correct item by it's class name.
         //If not climb the DOM tree until we reach it.
-        if(!target.className && !target.className.includes('day-label')) {
+        if (!target.className && !target.className.includes('day-label')) {
             target = target.closest('.day-label');
-            console.log(target);
         }
         if (target.className.includes('active')) {
             //We want to close the open day and show all days
@@ -221,15 +288,35 @@ const app = {
             target.nextElementSibling.style.display = 'none';
             //Add display block to all the day divs
             dayDivs.forEach(div => div.style.display = 'block');
+            //Show the save btn
+            document.querySelector('.btn-sched').style.display = 'block';
         } else {
             //Add active class for later reference
             target.classList.add('active');
-            //Get the aprent element to compare with later 
+            //Get the parent element to compare with later 
             const targetDay = target.parentElement;
-            //Cycle through the day divs and hide all the divs that don't match out target parent
-            dayDivs.forEach(div => div === targetDay ? null : (div.style.display = 'none'))
+            //Cycle through the day divs and hide all the divs that don't match our target parent
+            dayDivs.forEach(div => div === targetDay ? null : (div.style.display = 'none'));
+            // Hide the save btn
+            document.querySelector('.btn-sched').style.display = 'none';
             // open the body of the day div we want to see
             target.nextElementSibling.style.display = 'block';
+        }
+    },
+
+    filterTrack: function () {
+        const filter = document.querySelector('#filter form');
+        const pTag = document.createElement('p');
+        const filterReplace = app.deviceData.filter.replace
+        const expiresOn = Date.parse(`${filterReplace.month}/${filterReplace.day}/${filterReplace.year}`);
+        const today = new Date().getTime();
+        const days = Math.floor((expiresOn - today) / 86400000);
+        pTag.innerHTML = days >= 0 ? `Filter expires in ${days} day${days === 1 ? '' : 's'}.` : `Filter expired ${days * (-1)} day${days === 1 ? '' : 's'} ago!`;
+        pTag.style.color = days >= 0 ? 'green' : 'red';
+        filter.appendChild(pTag);
+
+        if (expiresOn > today) {
+
         }
     }
 }
@@ -241,6 +328,7 @@ const view = {
         this.populateUv();
         this.populateSchedule();
         this.populateMostFields();
+        app.filterTrack();
 
         document.getElementById('container').style.display = 'flex';
         document.getElementById('loader-div').style.display = 'none';
@@ -267,21 +355,21 @@ const view = {
         const numberOfHours = 6
         const timerHrs = document.getElementById('timer-hrs');
         for (var i = 0; i <= numberOfHours; i++) {
-            const option = document.createElement('option')
+            const option = document.createElement('option');
             option.value = i;
-            option.innerHTML = i
+            option.innerHTML = i;
             timerHrs.appendChild(option);
         }
 
         //Number of minutes you want to show up in the timer dropdown
         //in increments of "interval". If minutes = 60 the last option will be 55.
-        const numberOfMinutes = 60
-        const interval = 5
+        const numberOfMinutes = 60;
+        const interval = 5;
         const timerMin = document.getElementById('timer-min');
         for (var i = 0; i < numberOfMinutes; i = i + interval) {
-            const option = document.createElement('option')
+            const option = document.createElement('option');
             option.value = i;
-            option.innerHTML = i
+            option.innerHTML = i;
             timerMin.appendChild(option);
         }
 
@@ -306,7 +394,7 @@ const view = {
     },
 
     populateUv: function () {
-        const uvSelector = document.getElementById('uv-delay');
+        const uvDelaySelector = document.getElementById('uv-delay');
         //Number of minutes you want to show up in the timer dropdown
         //in increments of "interval". If minutes = 60 the last option will be 55.
         const numberOfMinutes = 15;
@@ -315,40 +403,156 @@ const view = {
             const option = document.createElement('option')
             option.value = i;
             option.innerHTML = i
-            uvSelector.appendChild(option);
-        }
+            uvDelaySelector.appendChild(option);
+        };
+        uvDelaySelector.value = app.deviceData.uv.offDelay;
+        uvDelaySelector.setAttribute('data-value', app.deviceData.uv.offDelay);
     },
 
     populateSchedule: function () {
         // Get all the programs
         const programs = app.formatProgramData(app.deviceData.prog);
-        console.log('programs', programs)
         // Grab all the program bodies
         const programBodies = document.querySelectorAll('.day-body');
-        // Get the key for each day
-        const days = Object.keys(programs)
-        console.log('days', days);
-        console.log('program bodies', programBodies)
-        // Add existing programs to their respective body
-        days.forEach((day) => {
-            // What day are we on
-            console.log('day', day);
-            //Get all programs for that day
-            const dayProgs = programs[day];
-            console.log('day progs', dayProgs)
-            
-            console.log('day body', dayBody);
-            // For each day program create a program div
-            dayProgs.forEach((program) => {
-                console.log(program);
+        // Loop through all the program bodies and populate them with the programs belonging to that body
+        programBodies.forEach((progBody) => {
+            // Add new program tag
+            const addNew = document.createElement('small');
+            addNew.className = 'add-new-prog';
+            addNew.innerText = '+ Add New Program';
+
+            const id = progBody.id
+            // use the id to get the right programs
+            const dayProgs = programs[id];
+            // loop through the programs, if any, and add them to the body
+            dayProgs.forEach((prog, index) => {
+                //Create a div for each program
+                const progDiv = this.createprogramDiv(prog, index, id);
+                progDiv.className = 'prog-div';
+
+                progBody.appendChild(progDiv);
             });
 
+            if (progBody.childElementCount < 3) {
+                progBody.appendChild(addNew);
+            }
+        })
+    },
+
+    createprogramDiv: function (prog, index, bodyDay) {
+        //Create the main program div that houses each program
+        const progDiv = document.createElement('div');
+        progDiv.className = 'prog-div';
+        const dataPath = `prog.${index}.${bodyDay}`;
+        progDiv.setAttribute('data-path', dataPath);
+
+        //Program Div time blocks
+        const progTimes = document.createElement('div');
+        progTimes.className = 'prog-times';
+        progDiv.appendChild(progTimes);
+
+        const completeTimeBlock1 = document.createElement('div');
+        completeTimeBlock1.className = 'complete-time-block';
+        progTimes.appendChild(completeTimeBlock1);
+
+        const completeTimeBlock2 = document.createElement('div');
+        completeTimeBlock2.className = 'complete-time-block';
+        progTimes.appendChild(completeTimeBlock2);
+
+        const onLabel = this.createLabel('Turn On');
+        completeTimeBlock1.appendChild(onLabel);
+        const timeBlockOn = this.createTimeBlock(prog.on, 'on');
+        completeTimeBlock1.appendChild(timeBlockOn);
+        const offLabel = this.createLabel('Turn Off');
+        completeTimeBlock2.appendChild(offLabel);
+        const timeBlockOff = this.createTimeBlock(prog.off, 'off');
+        completeTimeBlock2.appendChild(timeBlockOff);
+
+        // Program Div Settings block
+        const progSettings = document.createElement('div');
+        progSettings.className = 'prog-settings';
+        progDiv.appendChild(progSettings);
+
+        const progSetBlockSpeed = document.createElement('div');
+        progSetBlockSpeed.className = 'prog-set-block';
+        progSettings.appendChild(progSetBlockSpeed);
+        const speedLabel = this.createLabel('Speed');
+        progSetBlockSpeed.appendChild(speedLabel);
+        const speedSelect = this.createSelect(prog.speed, app.oneTo12.slice(0, (app.oneTo12.length - 2)));
+        progSetBlockSpeed.appendChild(speedSelect);
+
+
+        const progSetBlockMode = document.createElement('div');
+        progSetBlockMode.className = 'prog-set-block';
+        progSettings.appendChild(progSetBlockMode);
+        const modeLabel = this.createLabel('Mode');
+        progSetBlockMode.appendChild(modeLabel);
+        const modeSelect = this.createSelect(prog.mode, [{ value: 0, text: 'Off' }, { value: 1, text: 'On' }, { value: 2, text: 'Program' }]);
+        progSetBlockMode.appendChild(modeSelect);
+
+        const deleteBtn = document.createElement('small');
+        deleteBtn.innerText = '- Delete Program';
+        deleteBtn.className = 'prog-delete';
+        progDiv.appendChild(deleteBtn);
+
+        return progDiv;
+    },
+
+    createTimeBlock: function (time, onOff) {
+        const timeTo12Obj = app.convertTimeTo12(time)
+
+        const onOffBlock = document.createElement('div');
+        onOffBlock.className = `on-off-block ${onOff}`;
+
+        const hourSelect = this.createSelect(timeTo12Obj.hour, app.oneTo12.slice(1));
+        hourSelect.setAttribute('data-value', timeTo12Obj.hour);
+        hourSelect.classList.add('time-element');
+        hourSelect.setAttribute('data-type', 'hour');
+        onOffBlock.appendChild(hourSelect);
+
+        const minuteSelect = this.createSelect((timeTo12Obj.minutes === 0 ? '00' : timeTo12Obj.minutes), app.minutes);
+        minuteSelect.setAttribute('data-value', timeTo12Obj.minutes);
+        minuteSelect.classList.add('time-element');
+        minuteSelect.setAttribute('data-type', 'minute');
+        onOffBlock.appendChild(minuteSelect);
+
+        const ampmSelect = this.createSelect(timeTo12Obj.ampm, [{ value: 'am', text: 'AM' }, { value: 'pm', text: 'PM' }]);
+        ampmSelect.setAttribute('data-value', timeTo12Obj.ampm);
+        ampmSelect.classList.add('time-element');
+        ampmSelect.setAttribute('data-type', 'ampm')
+        onOffBlock.appendChild(ampmSelect);
+
+        return onOffBlock;
+    },
+
+    createSelect: function (value, options) {
+        const select = document.createElement('select');
+
+        options.forEach((option) => {
+            const optionEl = document.createElement('option');
+
+            if (typeof option === 'object') {
+                optionEl.value = option.value;
+                optionEl.innerHTML = option.text;
+            } else {
+                optionEl.value = option;
+                optionEl.innerHTML = option
+            }
+            select.appendChild(optionEl);
         });
+
+        select.value = value
+        return select;
     },
 
-    createprogramDiv: function (dayBody, day, ) {
-
-    },
+    createLabel: function (text, labelFor) {
+        const label = document.createElement('label');
+        if (labelFor) {
+            label.htmlFor = labelFor;
+        }
+        label.innerHTML = text;
+        return label;
+    }
 }
 
 app.init();
