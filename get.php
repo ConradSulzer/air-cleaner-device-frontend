@@ -134,8 +134,7 @@ $allSettings['rtc']['year'] = 21;
 $allSettings['rtc']['month'] = 01;
 $allSettings['rtc']['day'] = 21;
 $allSettings['rtc']['dayOfWeek'] = 'T';
-$allSettings['rtc']['hour'] = 10;
-$allSettings['rtc']['minute'] = 25;
+$allSettings['rtc']['time'] = 1330;
 $allSettings['rtc']['second'] = 01;
 
 $allSettings['uv']['mode'] = 1; // 1 = auto, 0 = disabled

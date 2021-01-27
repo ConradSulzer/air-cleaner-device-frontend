@@ -126,7 +126,7 @@
                     </div>
                 </div>
                 <div class="btn-div btn-sched">
-                    <button type="button" class="btn btn-submit-changes disabled" disabled="true">
+                    <button type="button" id="set-schedule" class="btn btn-submit-changes disabled" disabled="true">
                         Save Changes
                     </button>
                 </div>
@@ -260,42 +260,56 @@
             </div>
             <div class="section-body" id="clock">
                 <form class="form-control">
-                    <div class="input-div">
+                    <div class="input-div clock-setter">
                         <label for="clock-month">Month</label>
-                        <select id="clock-month" name="clock-month" data-value=""
-                            data-path="app.deviceData.rtc.month"></select>
+                        <select id="clock-month" name="clock-month" class="pop" data-value="" data-path="app.deviceData.rtc.month"></select>
 
-                        <label for="clock-day">Day</label>
-                        <select id="clock-day" name="clock-day" data-value=""
-                            data-path="app.deviceData.rtc.day"></select>
+                        <label for="clock-date">Date</label>
+                        <select id="clock-date" name="clock-date" class="pop" data-value="" data-path="app.deviceData.rtc.day"></select>
+
+                        <label for="clock-dow">Day Of The Week</label>
+                        <select id="clock-dow" name="clock-dow" data-value="select-day" data-path="app.deviceData.rtc.dayOfWeek">
+                            <option value="select-day">Select Day</option>
+                            <option value="0">Sunday</option>
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                        </select>
 
                         <label for="clock-year">Year</label>
-                        <select id="clock-year" name="clock-year" data-value=""
-                            data-path="app.deviceData.rtc.year"></select>
+                        <select id="clock-year" name="clock-year" class="pop" data-value="" data-path="app.deviceData.rtc.year"></select>
 
                         <div class="time-group">
                             <div class="flex-col time-item">
                                 <label for="clock-hour">Hour</label>
-                                <select id="clock-hour" name="clock-hour" data-value=""
-                                    data-path="app.deviceData.rtc.hour"></select>
+                                <select id="clock-hour" name="clock-hour" data-value="" data-path="app.deviceData.rtc.hour"></select>
                             </div>
 
                             <div class="flex-col time-item">
                                 <label for="clock-min">Min</label>
-                                <select id="clock-min" name="clock-min" data-value=""
-                                    data-path="app.deviceData.rtc.minute"></select>
+                                <select id="clock-min" name="clock-min" data-value="" data-path="app.deviceData.rtc.minute"></select>
                             </div>
 
                             <div class="flex-col time-item">
                                 <label for="clock-sec">Sec</label>
-                                <select id="clock-sec" name="clock-sec" data-value=""
-                                    data-path="app.deviceData.rtc.second"></select>
+                                <select id="clock-sec" name="clock-sec" class="pop" data-value="" data-path="app.deviceData.rtc.second"></select>
+                            </div>
+
+                            <div class="flex-col time-item">
+                                <label for="clock-ampm">AM/PM</label>
+                                <select id="clock-ampm" name="clock-ampm" data-value="" data-path="app.deviceData.rtc.ampm">
+                                    <option value="am">AM</option>
+                                    <option value="pm">PM</option>
+                                </select>
                             </div>
                         </div>
 
                     </div>
                     <div class="btn-div">
-                        <button type="button" class="btn btn-submit-changes disabled" disabled="true">
+                        <button type="button" id="set-clock" class="btn btn-submit-changes disabled" disabled="true">
                             Set Clock
                         </button>
                     </div>

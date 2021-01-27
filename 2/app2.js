@@ -73,8 +73,8 @@ const app = {
         //Check to see if the value has changed and if true add "changed" class to the input
         // and activate the "Submit Changes" button
         const input = evt.target
-        
-        const button = input.closest('.section-body').querySelector('button')  ;
+
+        const button = input.closest('.section-body').querySelector('button');
         const currentValue = input.value;
         const oldValue = input.dataset.value;
 
@@ -82,6 +82,11 @@ const app = {
         if (input.closest('.day-div')) {
             return app.scheduleChanges(evt);
         }
+
+        // //Check to see if they are setting the clock
+        // if(input.closest('.input-div').includes('clock-setter')) {
+        //     return app.clockChanges(evt);
+        // }
 
         //Adding changed class and activating "submit changes" button
         if (currentValue !== oldValue) {
@@ -105,7 +110,7 @@ const app = {
         //Check to see if the value has changed and if true add "changed" class to the input
         // and activate the "Submit Changes" button
         const input = evt.target
-        const progDiv = input.closest('.day-div');
+        const dayDiv = input.closest('.day-div');
         const button = input.closest('.section-body').querySelector('button');
         // see if there are any other changed program for different days
         const currentValue = input.value;
@@ -118,7 +123,7 @@ const app = {
             } else {
                 input.classList.add('input-changed');
             }
-            progDiv.classList.add('sched-changed');
+            dayDiv.classList.add('sched-changed');
             button.removeAttribute('disabled')
             button.classList.remove('disabled')
         } else if (currentValue === oldValue) {
@@ -128,10 +133,14 @@ const app = {
                 if (areStillTimeChanges === 0) {
                     input.closest('.on-off-block').classList.remove('time-changed');
                 }
-            } else  {
+            } else {
                 input.classList.remove('input-changed');
             }
-            progDiv.classList.remove('sched-changed');
+            // Needs to check to see if there are other changed inputs still before removing the changed class from class day div
+            const areStillTimeChanges = dayDiv.querySelectorAll('.input-changed').length
+            if (areStillTimeChanges < 1) {
+                dayDiv.classList.remove('sched-changed');
+            }
             const areChangedProgs = document.querySelectorAll('.sched-changed').length
             if (areChangedProgs === 0) {
                 button.setAttribute('disabled', true)
@@ -140,14 +149,42 @@ const app = {
         }
     },
 
+    // clockChanges: function (evt) {
+    //     const target = evt.target;
+    //     const button = document.getElementById('clock-setter');
+    //     const currentValue = target.value;
+    //     const oldValue = target.dataset.value;
+    //     const timeGroup = target.closest('.time-group') || undefined;
+
+    //     if(currentValue !== oldValue) {
+    //         if(timeGroup) {
+    //             timeGroup.classList.add('time-changed');
+    //         }
+
+    //         target.classList.add('input-changed');
+    //         button.removeAttribute('disabled');
+    //         button.classList.remove('disabled');
+    //     }else if (currentValue === oldValue) {
+    //         if(timeGroup) {
+    //             const areOtherChanges = timeGroup.querySelectorAll('.input-changed');
+    //             if(areOtherChanges.length === 0) {
+    //                 timeGroup.classList.remove('time-changed');
+    //             }
+    //         }
+    //     }
+
+    // },
+
     submitChanges: function (evt) {
         evt.preventDefault();
         const target = evt.target;
         const parentForm = target.closest('form');
         let url = '';
 
-        if (!parentForm) {
+        if (target.id === 'set-schedule') {
             url = app.getQueryStringScheduler(target);
+        } else if (target.id === 'set-clock') {
+            url = app.getQueryStringClock(target);
         } else {
             url = app.getQueryString(target);
         }
@@ -242,6 +279,50 @@ const app = {
         return url;
     },
 
+    getQueryStringClock: function (el) {
+        const nodeList = el.closest('form').querySelectorAll('.input-changed');
+        const changedInputs = [...nodeList]
+        const strings = [];
+
+        while (changedInputs.length > 0) {
+            const input = changedInputs[0];
+
+            if (input.closest('.time-group')) {
+                if (input.id === 'clock-hour' || input.id === 'clock-min' || input.id === 'clock-ampm') {
+                    const hour = document.getElementById('clock-hour');
+                    const minute = document.getElementById('clock-min');
+                    const ampm = document.getElementById('clock-ampm');
+                    const timeTo24 = this.convertTimeTo24({ hour: hour.value, minute: minute.value, ampm: ampm.value });
+                    const query = `prog[rtc][time]=${timeTo24}`;
+                    strings.push(query);
+
+                    changedInputs.forEach((input, index) => {
+                        if (input === hour || input === min || input === ampm) {
+                            changedInputs.splice(index, 1);
+                        }
+                    });
+                }
+            } else {
+                stringPath = this.convertToPathString(input.dataset.path);
+                const query = `${stringPath}=${input.value.replace(' ', '%20')}`
+                strings.push(query);
+                changedInputs.splice(0, 1);
+            }
+
+
+        }
+
+        const url = strings.reduce((a, b, i) => {
+            if (i === 0) {
+                return a + b
+            } else {
+                return a + '&' + b
+            }
+        }, app.setURL);
+
+        return url;
+    },
+
     convertToPathString: function (string) {
         var array = string.split('.');
         var length = array.length;
@@ -257,14 +338,6 @@ const app = {
 
         return pathString;
     },
-
-    // Marked for deletion
-    // findDay: function (abrev) {
-    //     const daysAbrev = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    //     const regx = new RegExp(`^${abrev}`, 'g');
-    //     const found = daysAbrev.find(element => regx.test(element));
-    //     return found;
-    // },
 
     formatProgramData: function (data) {
         //Instead of the original format of programNumber->day->program.
@@ -392,6 +465,7 @@ const view = {
         this.populateMotor();
         this.populateUv();
         this.populateSchedule();
+        this.populateClock();
         this.populateMostFields();
         app.filterTrack();
 
@@ -455,7 +529,42 @@ const view = {
     },
 
     populateClock: function () {
+        const month = document.getElementById('clock-month');
+        const date = document.getElementById('clock-date');
+        const year = document.getElementById('clock-year');
+        let hour = document.getElementById('clock-hour');
+        const min = document.getElementById('clock-min');
+        const sec = document.getElementById('clock-sec');
+        let ampm = document.getElementById('clock-ampm');
+        const oneTo59 = [];
+        const thisYear = new Date().getFullYear();
 
+        for (var i = 0; i < 60; i++) {
+            oneTo59.push(i)
+        }
+
+        this.createOptions(month, oneTo59.slice(1, 13));
+        this.createOptions(date, oneTo59.slice(1, 32));
+        // Add more years to the list by continuing to add objects and iterating thisYear + 1. Note: the regex for the replace method will need to be changed in 100 or so years.
+        this.createOptions(year, [
+            { value: thisYear.toString().replace('20', ''), text: thisYear },
+            { value: (thisYear + 1).toString().replace('20', ''), text: thisYear + 1 }
+        ])
+        this.createOptions(hour, oneTo59.slice(1, 13));
+        this.createOptions(min, oneTo59.slice(0));
+        this.createOptions(sec, oneTo59.slice(0))
+
+        // Need to get the 12 hr time object to assign values now that time is not coming in in parts.
+        // Fix hour time to 24
+        const timeObj = app.convertTimeTo12(app.deviceData.rtc.time);
+        console.log('TIME', app.deviceData.rtc.time);
+        console.log('TIME OBJ', timeObj);
+        hour.value = timeObj.hour;
+        hour.dataset.value = timeObj.hour;
+        min.value = timeObj.minutes;
+        min.dataset.value = timeObj.minutes;
+        ampm.value = timeObj.ampm;
+        ampm.dataset.value = timeObj.ampm;
     },
 
     populateUv: function () {
@@ -546,6 +655,7 @@ const view = {
         const speedSelect = this.createSelect(prog.speed, app.oneTo12.slice(0, (app.oneTo12.length - 2)));
         speedSelect.setAttribute('data-key', 'speed')
         speedSelect.setAttribute('data-ref', `${index}.speed`);
+        speedSelect.setAttribute('data-value', prog.speed);
         progSetBlockSpeed.appendChild(speedSelect);
 
 
@@ -557,6 +667,7 @@ const view = {
         const modeSelect = this.createSelect(prog.mode, [{ value: 0, text: 'Off' }, { value: 1, text: 'On' }, { value: 2, text: 'Program' }]);
         modeSelect.setAttribute('data-key', 'mode');
         modeSelect.setAttribute('data-ref', `${index}.mode`);
+        modeSelect.setAttribute('data-value', prog.mode);
         progSetBlockMode.appendChild(modeSelect);
 
         const deleteBtn = document.createElement('small');
@@ -616,6 +727,21 @@ const view = {
 
         select.value = value
         return select;
+    },
+
+    createOptions: function (select, options) {
+        options.forEach((option) => {
+            const optionEl = document.createElement('option');
+
+            if (typeof option === 'object') {
+                optionEl.value = option.value;
+                optionEl.innerHTML = option.text;
+            } else {
+                optionEl.value = option;
+                optionEl.innerHTML = option
+            }
+            select.appendChild(optionEl);
+        });
     },
 
     createLabel: function (text, labelFor) {
