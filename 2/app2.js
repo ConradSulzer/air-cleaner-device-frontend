@@ -73,13 +73,14 @@ const app = {
         //Check to see if the value has changed and if true add "changed" class to the input
         // and activate the "Submit Changes" button
         const input = evt.target
-        const button = input.parentElement.parentElement.querySelector('button');
+        
+        const button = input.closest('.section-body').querySelector('button')  ;
         const currentValue = input.value;
         const oldValue = input.dataset.value;
 
         //Check to see if it was a change to the schedule
         if (input.closest('.day-div')) {
-            return this.scheduleChanged(evt);
+            return app.scheduleChanges(evt);
         }
 
         //Adding changed class and activating "submit changes" button
@@ -111,15 +112,25 @@ const app = {
         const oldValue = input.dataset.value;
 
         if (currentValue !== oldValue) {
-            input.classList.add('input-changed');
-            progDiv.classList.add('sched-changed');
-            const areChangedProgs = document.querySelectorAll('.sched-changed').length
-            if (areChangedProgs === 1) {
-                button.removeAttribute('disabled');
-                button.classList.remove('disabled')
+            if (input.closest('onoff-block')) {
+                input.closest('.on-off-block').classList.add('time-changed');
+                input.classList.add('input-changed');
+            } else {
+                input.classList.add('input-changed');
             }
+            progDiv.classList.add('sched-changed');
+            button.removeAttribute('disabled')
+            button.classList.remove('disabled')
         } else if (currentValue === oldValue) {
-            input.classList.remove('input-changed');
+            if (input.closest('.on-off-block')) {
+                input.classList.remove('input-changed');
+                const areStillTimeChanges = input.closest('.on-off-block').querySelectorAll('input-changed').length
+                if (areStillTimeChanges === 0) {
+                    input.closest('.on-off-block').classList.remove('time-changed');
+                }
+            } else  {
+                input.classList.remove('input-changed');
+            }
             progDiv.classList.remove('sched-changed');
             const areChangedProgs = document.querySelectorAll('.sched-changed').length
             if (areChangedProgs === 0) {
@@ -138,10 +149,10 @@ const app = {
         if (!parentForm) {
             url = app.getQueryStringScheduler(target);
         } else {
-            url = app.getChangedTime(target);
+            url = app.getQueryString(target);
         }
 
-        console.log(url);
+        console.log(url)
         // SEND GET REQUEST
 
         // RENDER SUCCESS/FAIL MESSAGE
@@ -160,7 +171,7 @@ const app = {
         }
 
         const url = strings.reduce((a, b, i) => {
-            if(i === 0) {
+            if (i === 0) {
                 return a + b
             } else {
                 return a + '&' + b
@@ -170,7 +181,68 @@ const app = {
         return url;
     },
 
-    getQueryStringScheduler: function (string) {
+    getQueryStringScheduler: function (el) {
+        // Get changed inputs that exist in the scheduler
+        const changedInputsNodeList = document.getElementById('Schedule').querySelectorAll('.input-changed');
+        const changedInputs = [...changedInputsNodeList];
+        const progDiv = el.closest('.prog-div')
+        const strings = [];
+
+        while (changedInputs.length > 0) {
+            const progDiv = changedInputs[0].closest('.prog-div')
+            // Check if it is a program setting, aka not time. Get string like a regular input.
+            if (changedInputs[0].closest('.prog-set-block')) {
+                stringPath = this.convertToPathString(progDiv.dataset.path + '.' + changedInputs[0].dataset.key);
+                const query = `${stringPath}=${changedInputs[0].value.replace(' ', '%20')}`
+                strings.push(query);
+                changedInputs.splice(0, 1);
+            } else if (changedInputs[0].closest('.on-off-block')) {
+                //Get the on-off-block to see if the time is for on or off
+                const onOffBlock = changedInputs[0].closest('.on-off-block');
+                const onOrOff = onOffBlock.dataset.key;
+                // Get the time object represented by the elements in the on-off-block
+                // convert that time to 24hrs
+                const timeInputs = onOffBlock.querySelectorAll('select');
+                const timeObj = { hour: '', minute: '', ampm: '' }
+
+                for (var j = 0; j < timeInputs.length; j++) {
+                    timeObj[timeInputs[j].dataset.type] = timeInputs[j].value
+                }
+                const timeTo24 = app.convertTimeTo24(timeObj);
+                // create and push the query string
+                stringPath = this.convertToPathString(progDiv.dataset.path + '.' + onOrOff);
+                const query = `${stringPath}=${timeTo24}`;
+                strings.push(query);
+                // TO prevent duplicates, delete any inputs from the changedInputs array that are part of
+                // the on-off-block we just got the changed time for.
+                const currentOnOffBlockChangedEls = onOffBlock.querySelectorAll('.input-changed');
+                // take each currentOnOffBlockEl
+                for (var k = 0; k < currentOnOffBlockChangedEls.length; k++) {
+                    const alreadyGotElement = currentOnOffBlockChangedEls[k];
+                    // Run through the node list of changed inputs to see if there is a match
+                    for (var l = 0; l < changedInputs.length; l++) {
+                        const match = changedInputs[l];
+                        if (alreadyGotElement.dataset.ref === match.dataset.ref) {
+                            changedInputs.splice(l, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        const url = strings.reduce((a, b, i) => {
+            if (i === 0) {
+                return a + b
+            } else {
+                return a + '&' + b
+            }
+        }, app.setURL);
+
+        return url;
+    },
+
+    convertToPathString: function (string) {
         var array = string.split('.');
         var length = array.length;
         var pathString = '';
@@ -184,10 +256,6 @@ const app = {
         }
 
         return pathString;
-    },
-
-    updateTime: function (evt) {
-
     },
 
     // Marked for deletion
@@ -212,7 +280,6 @@ const app = {
                 program[day]['index'] = index
                 //Push that program to it's correct day's array in the new programs object
                 programs[day].push(program[day]);
-
             });
 
         });
@@ -256,16 +323,14 @@ const app = {
     },
 
     convertTimeTo24: function ({ hour, minute, ampm }) {
-        let time = parseInt(hour.toString() + minute.toString());
+        let time = parseInt(hour + minute);
         if (ampm === 'pm') {
-            hour = hour + 12;
-
-            if (hour > 23) {
-                hour = 0;
-            }
-
-            time = parseInt(hour.toString() + minute.toString());
+            hour = parseInt(hour) + 12;
+        } else if (ampm === 'am' && hour === '12') {
+            hour = 0
         }
+
+        time = parseInt(hour.toString() + minute);
 
         return time;
     },
@@ -443,7 +508,7 @@ const view = {
         //Create the main program div that houses each program
         const progDiv = document.createElement('div');
         progDiv.className = 'prog-div';
-        const dataPath = `prog.${index}.${bodyDay}`;
+        const dataPath = `app.deviceData.prog.${index}.${bodyDay}`;
         progDiv.setAttribute('data-path', dataPath);
 
         //Program Div time blocks
@@ -461,11 +526,11 @@ const view = {
 
         const onLabel = this.createLabel('Turn On');
         completeTimeBlock1.appendChild(onLabel);
-        const timeBlockOn = this.createTimeBlock(prog.on, 'on');
+        const timeBlockOn = this.createTimeBlock(prog.on, 'on', index);
         completeTimeBlock1.appendChild(timeBlockOn);
         const offLabel = this.createLabel('Turn Off');
         completeTimeBlock2.appendChild(offLabel);
-        const timeBlockOff = this.createTimeBlock(prog.off, 'off');
+        const timeBlockOff = this.createTimeBlock(prog.off, 'off', index);
         completeTimeBlock2.appendChild(timeBlockOff);
 
         // Program Div Settings block
@@ -479,6 +544,8 @@ const view = {
         const speedLabel = this.createLabel('Speed');
         progSetBlockSpeed.appendChild(speedLabel);
         const speedSelect = this.createSelect(prog.speed, app.oneTo12.slice(0, (app.oneTo12.length - 2)));
+        speedSelect.setAttribute('data-key', 'speed')
+        speedSelect.setAttribute('data-ref', `${index}.speed`);
         progSetBlockSpeed.appendChild(speedSelect);
 
 
@@ -488,6 +555,8 @@ const view = {
         const modeLabel = this.createLabel('Mode');
         progSetBlockMode.appendChild(modeLabel);
         const modeSelect = this.createSelect(prog.mode, [{ value: 0, text: 'Off' }, { value: 1, text: 'On' }, { value: 2, text: 'Program' }]);
+        modeSelect.setAttribute('data-key', 'mode');
+        modeSelect.setAttribute('data-ref', `${index}.mode`);
         progSetBlockMode.appendChild(modeSelect);
 
         const deleteBtn = document.createElement('small');
@@ -498,28 +567,32 @@ const view = {
         return progDiv;
     },
 
-    createTimeBlock: function (time, onOff) {
+    createTimeBlock: function (time, onOff, index) {
         const timeTo12Obj = app.convertTimeTo12(time)
 
         const onOffBlock = document.createElement('div');
         onOffBlock.className = `on-off-block ${onOff}`;
+        onOffBlock.setAttribute('data-key', onOff);
 
         const hourSelect = this.createSelect(timeTo12Obj.hour, app.oneTo12.slice(1));
         hourSelect.setAttribute('data-value', timeTo12Obj.hour);
         hourSelect.classList.add('time-element');
         hourSelect.setAttribute('data-type', 'hour');
+        hourSelect.setAttribute('data-ref', `${index}.hour`);
         onOffBlock.appendChild(hourSelect);
 
         const minuteSelect = this.createSelect((timeTo12Obj.minutes === 0 ? '00' : timeTo12Obj.minutes), app.minutes);
-        minuteSelect.setAttribute('data-value', timeTo12Obj.minutes);
+        minuteSelect.setAttribute('data-value', (timeTo12Obj.minutes === 0 ? '00' : timeTo12Obj.minutes));
         minuteSelect.classList.add('time-element');
         minuteSelect.setAttribute('data-type', 'minute');
+        minuteSelect.setAttribute('data-ref', `${index}.min`);
         onOffBlock.appendChild(minuteSelect);
 
         const ampmSelect = this.createSelect(timeTo12Obj.ampm, [{ value: 'am', text: 'AM' }, { value: 'pm', text: 'PM' }]);
         ampmSelect.setAttribute('data-value', timeTo12Obj.ampm);
         ampmSelect.classList.add('time-element');
-        ampmSelect.setAttribute('data-type', 'ampm')
+        ampmSelect.setAttribute('data-type', 'ampm');
+        ampmSelect.setAttribute('data-ref', `${index}.ampm`);
         onOffBlock.appendChild(ampmSelect);
 
         return onOffBlock;
