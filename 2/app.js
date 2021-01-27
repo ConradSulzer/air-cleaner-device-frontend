@@ -32,7 +32,7 @@ const app = {
         const dayLabels = document.querySelectorAll('.day-label');
         dayLabels.forEach(label => label.addEventListener('click', app.openDay))
 
-        //Watch for changes to the schule
+        //Watch for changes to the schedule
         const dayBodies = document.querySelectorAll('.day-body');
         dayBodies.forEach(day => day.addEventListener('change', app.scheduleChanges))
 
@@ -82,11 +82,6 @@ const app = {
         if (input.closest('.day-div')) {
             return app.scheduleChanges(evt);
         }
-
-        // //Check to see if they are setting the clock
-        // if(input.closest('.input-div').includes('clock-setter')) {
-        //     return app.clockChanges(evt);
-        // }
 
         //Adding changed class and activating "submit changes" button
         if (currentValue !== oldValue) {
@@ -149,36 +144,20 @@ const app = {
         }
     },
 
-    // clockChanges: function (evt) {
-    //     const target = evt.target;
-    //     const button = document.getElementById('clock-setter');
-    //     const currentValue = target.value;
-    //     const oldValue = target.dataset.value;
-    //     const timeGroup = target.closest('.time-group') || undefined;
-
-    //     if(currentValue !== oldValue) {
-    //         if(timeGroup) {
-    //             timeGroup.classList.add('time-changed');
-    //         }
-
-    //         target.classList.add('input-changed');
-    //         button.removeAttribute('disabled');
-    //         button.classList.remove('disabled');
-    //     }else if (currentValue === oldValue) {
-    //         if(timeGroup) {
-    //             const areOtherChanges = timeGroup.querySelectorAll('.input-changed');
-    //             if(areOtherChanges.length === 0) {
-    //                 timeGroup.classList.remove('time-changed');
-    //             }
-    //         }
-    //     }
-
-    // },
-
-    submitChanges: function (evt) {
+    submitChanges: async function (evt) {
         evt.preventDefault();
         const target = evt.target;
-        const parentForm = target.closest('form');
+
+        // Turn the button off so they can't resubmit
+        const parentSection = target.closest('.section');
+        const button = parentSection.querySelector('button');
+        button.setAttribute('disabled', true);
+        button.classList.add('disabled');
+
+        // Bring up loader so they can't alter fields and to provide UX feedback
+        const loading = parentSection.querySelector('.submit-overlay');
+        loading.classList.add('waiting');
+         
         let url = '';
 
         if (target.id === 'set-schedule') {
@@ -190,7 +169,20 @@ const app = {
         }
 
         console.log(url)
-        // SEND GET REQUEST
+
+        try {
+            // SEND POST REQUEST
+            const response = await fetch(url, {
+                method: 'GET',
+            })
+
+            const data = await response.json();
+
+            console.log(data);
+        } catch (e) {
+            console.log(e);
+        }
+
 
         // RENDER SUCCESS/FAIL MESSAGE
 
@@ -222,7 +214,7 @@ const app = {
         // Get changed inputs that exist in the scheduler
         const changedInputsNodeList = document.getElementById('Schedule').querySelectorAll('.input-changed');
         const changedInputs = [...changedInputsNodeList];
-        const progDiv = el.closest('.prog-div')
+        // const progDiv = el.closest('.prog-div')
         const strings = [];
 
         while (changedInputs.length > 0) {
@@ -321,6 +313,19 @@ const app = {
         }, app.setURL);
 
         return url;
+    },
+
+    createObject: function (array, value) {
+        // Use a recursive function to build the nested objects
+        if (array.length === 1) {
+            return { [array[0]]: value }
+        }
+
+        if (array.length > 1) {
+            slicedArray = array.slice(1);
+            return { [array[0]]: createObj(slicedArray, value) };
+        }
+
     },
 
     convertToPathString: function (string) {
@@ -669,11 +674,6 @@ const view = {
         modeSelect.setAttribute('data-ref', `${index}.mode`);
         modeSelect.setAttribute('data-value', prog.mode);
         progSetBlockMode.appendChild(modeSelect);
-
-        const deleteBtn = document.createElement('small');
-        deleteBtn.innerText = '- Delete Program';
-        deleteBtn.className = 'prog-delete';
-        progDiv.appendChild(deleteBtn);
 
         return progDiv;
     },

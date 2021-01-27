@@ -123,12 +123,43 @@ p {
     }
 }
 
+/* Submit overlay **********************/
+.submit-overlay {
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 99;
+    background: #242527;
+    opacity: 0;
+    transition: opacity 150ms linear;
+}
+
+.submit-overlay.waiting {
+    visibility: visible;
+    opacity: .7;
+}
+
+.submit-loader {
+    top: 25%;
+}
+
+
 /* Section cards ***********************/
+label{ 
+    margin-bottom: 3px;
+}
+
+select {
+    margin-bottom: 4px;
+}
+
 .section {
     box-shadow: 1px 1px 10px #b3b1b2;
     width: 350px;
     display: inline-block;
     margin: 15px 20px;
+    position: relative;
 }
 
 .title-bar {
@@ -156,7 +187,7 @@ p {
 }
 
 .expand {
-    display: block;
+    visibility: hidden;
     margin-top: 4px;
 }
 
@@ -253,12 +284,6 @@ label {
 .day-body {
     display: none;
 }
-
-.add-new {
-    color: green;
-    margin-top: 6px;
-}
-
 .on-off-block {
     display: flex;
 }
@@ -295,13 +320,4 @@ label {
     width: 120px;
 }
 
-.add-new-prog {
-    color: green;
-    margin-top: 15px;
-    float: right;
-    cursor: pointer;
-}
-
-.prog-delete {
-    color: red;
-}
+@media all and
