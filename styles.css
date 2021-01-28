@@ -1,4 +1,5 @@
 /* Setup *****************/
+
 body {
     font-family: Helvetica, Arial, sans-serif;
     width: 100%;
@@ -13,10 +14,18 @@ p {
 }
 
 #container {
+    visibility: hidden;
     display: flex;
     flex-wrap: wrap;
     width: 1200px;
     margin: 0 auto;
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+
+#container.show {
+    visibility: visible;
+    opacity: 1;
 }
 
 .flex-col {
@@ -25,20 +34,33 @@ p {
 }
 
 /* Header ************* */
+
 #header {
+    display: none;
+    position: relative;
     background: #242527;
     width: 100%;
     height: 60px;
     box-shadow: 1px 1px 10px #b3b1b2;
-  }
-  
-  .slanted-header {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 200ms;
+}
+
+#header.show {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+.slanted-header {
     background: linear-gradient(300deg, transparent 30px, #ffce08 30px);
     height: 60px;
     width: 150px;
-  }
+}
 
-  /* Loader ***************/
+/* Loader ***************/
+
 #dark-overlay {
     background: #242527;
     width: 100vw;
@@ -70,7 +92,7 @@ p {
     background: -moz-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
     background: -webkit-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
     background: -o-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
-    background: -ms-linear-gradient(left,#ffce08 10%, rgba(255, 255, 255, 0) 42%);
+    background: -ms-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
     background: linear-gradient(to right, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
     position: relative;
     -webkit-animation: load3 1.4s infinite linear;
@@ -78,8 +100,9 @@ p {
     -webkit-transform: translateZ(0);
     -ms-transform: translateZ(0);
     transform: translateZ(0);
-  }
-  .loader:before {
+}
+
+.loader:before {
     width: 50%;
     height: 50%;
     background: #ffce08;
@@ -88,9 +111,10 @@ p {
     top: 0;
     left: 0;
     content: '';
-  }
-  .loader:after {
-    background:#242527;
+}
+
+.loader:after {
+    background: #242527;
     width: 75%;
     height: 75%;
     border-radius: 50%;
@@ -101,29 +125,32 @@ p {
     left: 0;
     bottom: 0;
     right: 0;
-  }
-  @-webkit-keyframes load3 {
+}
+
+@-webkit-keyframes load3 {
     0% {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     100% {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
-  @keyframes load3 {
+}
+
+@keyframes load3 {
     0% {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     100% {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
     }
 }
 
 /* Submit overlay **********************/
+
 .submit-overlay {
     visibility: hidden;
     width: 100%;
@@ -144,14 +171,16 @@ p {
     top: 25%;
 }
 
-
 /* Section cards ***********************/
-label{ 
+
+label {
     margin-bottom: 3px;
 }
 
 select {
     margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .section {
@@ -176,7 +205,7 @@ select {
     color: #ffce08;
 }
 
-.expand-icon {
+.expand-div {
     background: #ffce08;
     font-size: 36px;
     margin: 0;
@@ -186,9 +215,17 @@ select {
     text-align: center;
 }
 
+.expand-click-div {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #ffce08;
+    width: 100%;
+    height: 100%;
+}
+
 .expand {
     visibility: hidden;
-    margin-top: 4px;
 }
 
 .section-body {
@@ -200,25 +237,20 @@ select {
 }
 
 /* Form and inputs ****************/
+
 .form-control {
     position: relative;
-  display: flex;
-  flex-direction: column;
-  margin-top: 10px;
-  height: 100%;
-}
-
-label {
-  font-size: 14px;
-  font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    height: 100%;
 }
 
 .input-div {
     font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
-  
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
 }
 
 .time-group {
@@ -230,41 +262,47 @@ label {
 }
 
 /* Buttons ********************/
+
 .btn {
-  padding: 10px;
-  max-width: 200px;
-  background: #ffce08;
-  border: none;
-  color: #242527;
-  font-weight: 600;
-  margin-top: 16px;
-  border-radius: 2px;
-  margin-left: auto;
-  cursor: pointer;
+    padding: 10px;
+    max-width: 200px;
+    background: #ffce08;
+    border: none;
+    color: #242527;
+    font-weight: 600;
+    margin-top: 16px;
+    border-radius: 2px;
+    cursor: pointer;
 }
 
 .btn.disabled {
-  background: #f1e5b5;
-  color: #99999a;
-  cursor: default;
+    background: #f1e5b5;
+    color: #99999a;
+    cursor: default;
 }
 
 .btn-div {
     position: absolute;
-    bottom: 10;
+    bottom: 10px;
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    justify-content: space-between;
 }
 
 .btn-sched {
-    bottom: 16;
+    bottom: 16px;
+    position: static;
 }
 
 /* Scheduler ****************/
+
 .day-div {
     margin: 0 0 1px 0;
 }
 
 .day-label {
-  cursor: pointer;
+    cursor: pointer;
     font-size: 17px;
     width: 100%;
     background: #242527;
@@ -284,6 +322,7 @@ label {
 .day-body {
     display: none;
 }
+
 .on-off-block {
     display: flex;
 }
@@ -320,4 +359,61 @@ label {
     width: 120px;
 }
 
-@media all and
+.message {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 150ms linear;
+}
+
+.message.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Responsive *****************/
+
+@media screen and (min-width: 780px) and (max-width: 1180px) {
+    /* shrink the container to only show 2 cards per row */
+    #container {
+        width: 800px;
+    }
+}
+
+@media screen and (max-width: 779px) {
+    /* shrink container to only show one card per row */
+    #container {
+        width: 370px;
+    }
+    /* show the plus/expand icon */
+    .expand {
+        visibility: visible;
+        cursor: pointer;
+    }
+    .expand-click-div {
+        display: flex;
+    }
+
+    /* Hide the section bodies */
+    .section-body {
+        padding: 0;
+        overflow: hidden;
+        transition: height 200ms ease-in-out;
+        height: 0;
+        
+    }
+
+    /* Section body fade down/up */
+    .section-body.show{
+        padding: 16px;
+        height: 370px;
+    }
+
+    /* Close the space between title bars */
+    .section {
+        margin: 3px 5px;
+    }
+    /* Add some pace between the header and title bars */
+    #header {
+        margin-bottom: 20px;
+    }
+}

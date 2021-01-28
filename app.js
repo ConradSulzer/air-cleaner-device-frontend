@@ -37,6 +37,10 @@ const app = {
 
         //Watch for click on scheduler save button
         document.querySelector('.btn-sched').addEventListener('click', app.getChangedSchedule);
+
+        // Expand section body
+        const expandClickDivs = document.querySelectorAll('.expand-click-div');
+        expandClickDivs.forEach(expand => expand.addEventListener('click', app.toggleSection));
     },
 
     getData: async function () {
@@ -182,21 +186,40 @@ const app = {
             // Get the response and convert from JSON
             const data = await response.json();
 
+            console.log(data);
             if(data.success === true){
-                // cleanup function
+                // If successful, we'll cleanup
+                app.postSuccess(objectChanges, evt);
             } else {
-                // error handling
+                // If not successful, we'll let the user know and pass the error message from the response to the screen or a generic error message.
+                // app.postFail(json.message || 'Error: Please try again!')
             }
 
-            console.log(data);
+            
         } catch (e) {
             console.log(e);
         }
+    },
 
+    postSuccess: function (changes, evt, data) {
+        debugger
+        const button = evt.target;
+        const section = button.closest('.section');
+        const overlay = section.querySelector('.submit-overlay');
+        const card = section.querySelector('.section-body').id;
+        const message = section.querySelector('.message small');
 
-        // RENDER SUCCESS/FAIL MESSAGE
+        // Return button to disabled state
+        button.setAttribute('disabled', true);
+        button.classList.add('disabled');
 
-        // Update values individually to new values or update in app.devicedata and rerender page or fetch new get.php and rerender.
+        // Remove overlay
+        overlay.style.visibility = 'hidden';
+
+        // Show success message and make it green
+        message.innerHTML = 'Successfully ' + (button.innerHTML.includes('Save') ? 'saved!' : 'set!')
+        message.style.color = 'green';
+        message.parentElement.classList.add('show');
     },
 
     getQueryString: function (el) {
@@ -323,20 +346,17 @@ const app = {
         }
     },
 
-    convertToPathString: function (string) {
-        var array = string.split('.');
-        var length = array.length;
-        var pathString = '';
+    toggleSection: function (evt) {
+        
+        const target = evt.target;
+        const section = target.closest('.section');
+        const sectionBody = section.querySelector('.section-body');
 
-        for (var i = 2; i < length; i++) {
-            if (i === 2) {
-                pathString = `${array[i]}`;
-            } else {
-                pathString = pathString + `[${array[i]}]`
-            }
+        if(sectionBody.className.includes('show')) {
+            sectionBody.classList.remove('show');
+        }else {
+            sectionBody.classList.add('show');
         }
-
-        return pathString;
     },
 
     formatProgramData: function (data) {
@@ -427,7 +447,7 @@ const app = {
             //Add display block to all the day divs
             dayDivs.forEach(div => div.style.display = 'block');
             //Show the save btn
-            document.querySelector('.btn-sched').style.display = 'block';
+            document.querySelector('.btn-sched').style.display = 'flex';
         } else {
             //Add active class for later reference
             target.classList.add('active');
@@ -468,8 +488,9 @@ const view = {
         this.populateClock();
         this.populateMostFields();
         app.filterTrack();
-
-        document.getElementById('container').style.display = 'flex';
+        debugger
+        document.getElementById('container').classList.add('show');
+        document.getElementById('header').classList.add('show');
         document.getElementById('loader-div').style.display = 'none';
         document.getElementById('dark-overlay').style.display = 'none';
     },
