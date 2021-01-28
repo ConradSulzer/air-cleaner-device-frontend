@@ -8,30 +8,37 @@ body {
     background: whitesmoke;
 }
 
-.container {
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+p {
+    margin: 0;
 }
 
-#App {
-    margin-top: 16px;
+#container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 1200px;
+    margin: 0 auto;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header ************* */
 #header {
-  background: #242527;
-  width: 100%;
-  height: 60px;
-}
+    background: #242527;
+    width: 100%;
+    height: 60px;
+    box-shadow: 1px 1px 10px #b3b1b2;
+  }
+  
+  .slanted-header {
+    background: linear-gradient(300deg, transparent 30px, #ffce08 30px);
+    height: 60px;
+    width: 150px;
+  }
 
-.slanted-header {
-  background: linear-gradient(300deg, transparent 30px, #ffce08 30px);
-  height: 60px;
-  width: 150px;
-}
-
-/* Loader ***************/
+  /* Loader ***************/
 #dark-overlay {
     background: #242527;
     width: 100vw;
@@ -116,47 +123,89 @@ body {
     }
 }
 
+/* Submit overlay **********************/
+.submit-overlay {
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 99;
+    background: #242527;
+    opacity: 0;
+    transition: opacity 150ms linear;
+}
+
+.submit-overlay.waiting {
+    visibility: visible;
+    opacity: .7;
+}
+
+.submit-loader {
+    top: 25%;
+}
+
+
 /* Section cards ***********************/
+label{ 
+    margin-bottom: 3px;
+}
+
+select {
+    margin-bottom: 4px;
+}
+
 .section {
-    border-radius: 4px;
-    box-shadow: 1px 1px 10px #B3B1B2;
+    box-shadow: 1px 1px 10px #b3b1b2;
+    width: 350px;
+    display: inline-block;
+    margin: 15px 20px;
+    position: relative;
 }
 
 .title-bar {
     background: #242527;
-    padding: 1px;
     display: flex;
     justify-content: space-between;
-    border-radius: 4px 4px 0 0;
 }
 
 .title {
+    padding: 9px;
+    margin-top: 4px;
     font-size: 20px;
     font-weight: 500;
-    margin-left: 10px;
     color: #ffce08;
 }
 
 .expand-icon {
+    background: #ffce08;
     font-size: 36px;
     margin: 0;
-    padding: 12px;
-    color: #ffce08;
+    color: #242527;
+    height: 50px;
+    width: 50px;
+    text-align: center;
+}
+
+.expand {
+    visibility: hidden;
+    margin-top: 4px;
 }
 
 .section-body {
+    position: relative;
     color: #242527;
     padding: 16px;
-    border: 5px solid #242527;
-    border-radius: 0px 0px 4px 4px;
     background: white;
+    height: 370px;
 }
 
 /* Form and inputs ****************/
-form {
+.form-control {
+    position: relative;
   display: flex;
   flex-direction: column;
   margin-top: 10px;
+  height: 100%;
 }
 
 label {
@@ -165,13 +214,23 @@ label {
 }
 
 .input-div {
+    font-size: 14px;
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
+  
+}
+
+.time-group {
+    display: flex;
+}
+
+.time-item {
+    margin-right: 16px;
 }
 
 /* Buttons ********************/
-.btn-submit-changes {
+.btn {
   padding: 10px;
   max-width: 200px;
   background: #ffce08;
@@ -184,8 +243,81 @@ label {
   cursor: pointer;
 }
 
-.btn-submit-changes.disabled {
+.btn.disabled {
   background: #f1e5b5;
   color: #99999a;
   cursor: default;
 }
+
+.btn-div {
+    position: absolute;
+    bottom: 10;
+}
+
+.btn-sched {
+    bottom: 16;
+}
+
+/* Scheduler ****************/
+.day-div {
+    margin: 0 0 1px 0;
+}
+
+.day-label {
+  cursor: pointer;
+    font-size: 17px;
+    width: 100%;
+    background: #242527;
+    padding: 12px 10px;
+    color: #ffce08;
+    box-sizing: border-box;
+}
+
+.day-label.active {
+    padding: 3px 10px;
+}
+
+.day-label span {
+    float: right;
+}
+
+.day-body {
+    display: none;
+}
+.on-off-block {
+    display: flex;
+}
+
+.time-select-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.prog-div {
+    padding: 5px;
+    border: solid 1px #ffce08;
+    margin-top: 8px;
+}
+
+.prog-times {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.prog-settings {
+    display: flex;
+    justify-content: space-between;
+}
+
+.prog-set-block {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+.prog-set-block select {
+    width: 120px;
+}
+
+@media all and
