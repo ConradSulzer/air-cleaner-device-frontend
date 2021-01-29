@@ -1,3 +1,10 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 /* Setup *****************/
 
 body {
@@ -5,7 +12,8 @@ body {
     width: 100%;
     margin: 0px;
     padding: 0px;
-    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
     background: whitesmoke;
 }
 
@@ -15,11 +23,16 @@ p {
 
 #container {
     visibility: hidden;
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
     width: 1200px;
     margin: 0 auto;
     opacity: 0;
+    -webkit-transition: opacity 200ms ease-in;
+    -o-transition: opacity 200ms ease-in;
     transition: opacity 200ms ease-in;
 }
 
@@ -29,8 +42,13 @@ p {
 }
 
 .flex-col {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
 }
 
 /* Header ************* */
@@ -41,9 +59,12 @@ p {
     background: #242527;
     width: 100%;
     height: 60px;
-    box-shadow: 1px 1px 10px #b3b1b2;
+    -webkit-box-shadow: 1px 1px 10px #b3b1b2;
+            box-shadow: 1px 1px 10px #b3b1b2;
     visibility: hidden;
     opacity: 0;
+    -webkit-transition: opacity 200ms;
+    -o-transition: opacity 200ms;
     transition: opacity 200ms;
 }
 
@@ -54,6 +75,7 @@ p {
 }
 
 .slanted-header {
+    background: -o-linear-gradient(150deg, transparent 30px, #ffce08 30px);
     background: linear-gradient(300deg, transparent 30px, #ffce08 30px);
     height: 60px;
     width: 150px;
@@ -63,8 +85,8 @@ p {
 
 #dark-overlay {
     background: #242527;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     position: fixed;
     z-index: 99;
 }
@@ -75,10 +97,14 @@ p {
     z-index: 101;
     top: 40%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    transform: -webkit-translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+    -webkit-transform: -webkit-translate(-50%, -50%);
+            transform: -webkit-translate(-50%, -50%);
     transform: -moz-translate(-50%, -50%);
-    transform: -ms-translate(-50%, -50%);
+    -ms-transform: -ms-translate(-50%, -50%);
+        transform: -ms-translate(-50%, -50%);
 }
 
 .loader {
@@ -89,10 +115,8 @@ p {
     height: 11em;
     border-radius: 50%;
     background: #ffce08;
-    background: -moz-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
-    background: -webkit-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
     background: -o-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
-    background: -ms-linear-gradient(left, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
+    background: -webkit-gradient(linear, left top, right top, color-stop(10%, #ffce08), color-stop(42%, rgba(255, 255, 255, 0)));
     background: linear-gradient(to right, #ffce08 10%, rgba(255, 255, 255, 0) 42%);
     position: relative;
     -webkit-animation: load3 1.4s infinite linear;
@@ -159,6 +183,8 @@ p {
     z-index: 99;
     background: #242527;
     opacity: 0;
+    -webkit-transition: opacity 150ms linear;
+    -o-transition: opacity 150ms linear;
     transition: opacity 150ms linear;
 }
 
@@ -175,16 +201,17 @@ p {
 
 label {
     margin-bottom: 3px;
-}
-
-select {
-    margin-bottom: 4px;
     font-size: 14px;
     font-weight: 700;
 }
 
+select {
+    margin-bottom: 4px;
+}
+
 .section {
-    box-shadow: 1px 1px 10px #b3b1b2;
+    -webkit-box-shadow: 1px 1px 10px #b3b1b2;
+            box-shadow: 1px 1px 10px #b3b1b2;
     width: 350px;
     display: inline-block;
     margin: 15px 20px;
@@ -193,8 +220,12 @@ select {
 
 .title-bar {
     background: #242527;
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    justify-content: space-between;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
 }
 
 .title {
@@ -217,8 +248,12 @@ select {
 
 .expand-click-div {
     display: none;
-    align-items: center;
-    justify-content: center;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
     background: #ffce08;
     width: 100%;
     height: 100%;
@@ -240,20 +275,35 @@ select {
 
 .form-control {
     position: relative;
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
     margin-top: 10px;
     height: 100%;
+    -webkit-box-flex: 1;
+        -ms-flex: 1 1 auto;
+            flex: 1 1 auto;
 }
 
 .input-div {
     font-size: 14px;
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
     margin-bottom: 10px;
 }
 
 .time-group {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
 }
 
@@ -282,12 +332,22 @@ select {
 }
 
 .btn-div {
-    position: absolute;
+    /* position: absolute; */
     bottom: 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    align-items: baseline;
+    -webkit-box-align: end;
+        -ms-flex-align: end;
+            align-items: flex-end;
     width: 100%;
-    justify-content: space-between;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
+    -webkit-box-flex: 1;
+        -ms-flex: 1 1 auto;
+            flex: 1 1 auto;
+    margin-bottom: 14px;
 }
 
 .btn-sched {
@@ -308,7 +368,8 @@ select {
     background: #242527;
     padding: 12px 10px;
     color: #ffce08;
-    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
 }
 
 .day-label.active {
@@ -324,12 +385,19 @@ select {
 }
 
 .on-off-block {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
 }
 
 .time-select-block {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
 }
 
 .prog-div {
@@ -339,19 +407,35 @@ select {
 }
 
 .prog-times {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+            flex-direction: row;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
 }
 
 .prog-settings {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    justify-content: space-between;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
 }
 
 .prog-set-block {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
     margin-bottom: 8px;
 }
 
@@ -362,6 +446,8 @@ select {
 .message {
     visibility: hidden;
     opacity: 0;
+    -webkit-transition: opacity 150ms linear;
+    -o-transition: opacity 150ms linear;
     transition: opacity 150ms linear;
 }
 
@@ -375,14 +461,15 @@ select {
 @media screen and (min-width: 780px) and (max-width: 1180px) {
     /* shrink the container to only show 2 cards per row */
     #container {
-        width: 800px;
+        width: 780px;
     }
 }
 
 @media screen and (max-width: 779px) {
-    /* shrink container to only show one card per row */
+    /* show only title bars with expandability */
     #container {
-        width: 370px;
+        flex-direction: column;
+        width: 100%;
     }
     /* show the plus/expand icon */
     .expand {
@@ -390,14 +477,18 @@ select {
         cursor: pointer;
     }
     .expand-click-div {
+        display: -webkit-box;
+        display: -ms-flexbox;
         display: flex;
     }
 
     /* Hide the section bodies */
     .section-body {
-        padding: 0;
+        padding: 0px 16px;
         overflow: hidden;
-        transition: height 200ms ease-in-out;
+        -webkit-transition: all 500ms ease-in-out;
+        -o-transition: all 500ms ease-in-out;
+        transition: all 500ms ease-in-out;
         height: 0;
         
     }
@@ -410,7 +501,8 @@ select {
 
     /* Close the space between title bars */
     .section {
-        margin: 3px 5px;
+        margin: 3px auto;
+        width: 90vw;
     }
     /* Add some pace between the header and title bars */
     #header {
