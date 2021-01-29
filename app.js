@@ -1,12 +1,14 @@
 const app = {
-    deviceData: {},
-    oneTo12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    minutes: ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'],
+    genericErrorMessage: 'Error, please try again!',
     getURL: "http://127.0.0.1/aircontrol/get.php", // The GET request are sent to this address
     setURL: "http://127.0.0.1/aircontrol/set.php?", // The POST request are sent to this address
+    oneTo12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    minutes: ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'],
+    deviceData: {},
 
     init: async function () {
-        console.log('app initialized')
+        //Uncomment the below debugger statement, to see loading spinner. Must have browser devtools open. 
+        //debugger;
 
         const result = await this.getData();
 
@@ -44,8 +46,6 @@ const app = {
     },
 
     getData: async function () {
-        console.log('getting data...')
-
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await fetch(this.getURL, {
@@ -53,10 +53,7 @@ const app = {
                 })
 
                 const data = await response.json();
-
                 this.deviceData = data;
-
-                console.log('THIS DATA', this.deviceData)
 
                 resolve({
                     message: 'success',
@@ -69,7 +66,6 @@ const app = {
                 })
             }
         })
-
     },
 
     checkValue: function (evt) {
@@ -110,6 +106,8 @@ const app = {
         const input = evt.target
         const dayDiv = input.closest('.day-div');
         const button = input.closest('.section-body').querySelector('button');
+        const dayMessage = dayDiv.querySelector('.day-update-message');
+
         // see if there are any other changed program for different days
         const currentValue = input.value;
         const oldValue = input.dataset.value;
@@ -117,28 +115,33 @@ const app = {
         if (currentValue !== oldValue) {
             if (input.closest('onoff-block')) {
                 input.closest('.on-off-block').classList.add('time-changed');
-                input.classList.add('input-changed');
-            } else {
-                input.classList.add('input-changed');
-            }
+                
+            } 
+
+            dayMessage.classList.add('show');
+            input.classList.add('input-changed');
             dayDiv.classList.add('sched-changed');
             button.removeAttribute('disabled')
             button.classList.remove('disabled')
+
         } else if (currentValue === oldValue) {
+            
             if (input.closest('.on-off-block')) {
-                input.classList.remove('input-changed');
                 const areStillTimeChanges = input.closest('.on-off-block').querySelectorAll('input-changed').length
                 if (areStillTimeChanges === 0) {
                     input.closest('.on-off-block').classList.remove('time-changed');
                 }
-            } else {
-                input.classList.remove('input-changed');
             }
+
+            input.classList.remove('input-changed');
+
             // Needs to check to see if there are other changed inputs still before removing the changed class from class day div
             const areStillTimeChanges = dayDiv.querySelectorAll('.input-changed').length
             if (areStillTimeChanges < 1) {
                 dayDiv.classList.remove('sched-changed');
+                dayMessage.classList.remove('show');
             }
+            
             const areChangedProgs = document.querySelectorAll('.sched-changed').length
             if (areChangedProgs === 0) {
                 button.setAttribute('disabled', true)
@@ -150,29 +153,29 @@ const app = {
     submitChanges: async function (evt) {
         evt.preventDefault();
         const target = evt.target;
-
-        // Turn the button off so they can't resubmit
         const parentSection = target.closest('.section');
-        const button = parentSection.querySelector('button');
-        button.setAttribute('disabled', true);
-        button.classList.add('disabled');
 
-        // Bring up loader so they can't alter fields and to provide UX feedback
+        // Bring up loader so user can't alter fields or double submit and to provide UX feedback
         const loading = parentSection.querySelector('.submit-overlay');
         loading.classList.add('waiting');
 
-        let objectChanges = '';
+        //Uncomment the below debugger statement, to see loading spinner. Must have browser devtools open. 
+        //debugger;
+
+        let objectChanges = {};
 
         if (target.id === 'set-schedule') {
-            objectChanges = app.getQueryStringScheduler(target);
+            objectChanges = app.getChangesObjectScheduler(target);
         } else if (target.id === 'set-clock') {
-            objectChanges = app.getQueryStringClock(target);
+            objectChanges = app.getChangesObjectClock(target);
         } else {
-            objectChanges = app.getQueryString(target);
+            objectChanges = app.getChangesObject(target);
         }
 
         const json = JSON.stringify(objectChanges);
-        console.log(json);
+        
+        //Uncomment the below console.log(json) to see the json being sent 
+        // console.log(json);
 
         try {
             // SEND POST REQUEST
@@ -186,33 +189,39 @@ const app = {
             // Get the response and convert from JSON
             const data = await response.json();
 
-            console.log(data);
             if(data.success === true){
                 // If successful, we'll cleanup
                 app.postSuccess(objectChanges, evt);
             } else {
                 // If not successful, we'll let the user know and pass the error message from the response to the screen or a generic error message.
-                // app.postFail(json.message || 'Error: Please try again!')
+                // You can edit the generic message up top at genericErrorMessage.
+                const errorMessage = data.message || app.genericErrorMessage;
+                app.postFail(errorMessage, evt);
             }
 
-            
         } catch (e) {
             console.log(e);
+            app.postFail(errorMessage, evt);
         }
     },
 
-    postSuccess: function (changes, evt, data) {
+    postSuccess: function (changes, evt) {
         const button = evt.target;
         const section = button.closest('.section');
         const overlay = section.querySelector('.submit-overlay');
-        const card = section.querySelector('.section-body').id;
         const message = section.querySelector('.message small');
 
         // Update the app.deviceData object with the new values since those are now the current device values
-        Object.assign(app.deviceData, data);
+        Object.assign(app.deviceData, changes);
 
         // Populate the fields again with the new data now in app.deviceData
         app.updateInputs(section);
+
+        debugger
+        // If it was a schedule change, cleanup the scheduler classes
+        if(button.id === 'set-schedule'){
+            app.cleanupScheduler(section);
+        }
 
         // Return button to disabled state
         button.setAttribute('disabled', true);
@@ -233,6 +242,25 @@ const app = {
         setTimeout(hideMessage, 2000);
     },
 
+    postFail: function (msg, evt) {
+        const message = evt.target.closest('.section').querySelector('.message small');
+        const overlay = evt.target.closest('.section').querySelector('.submit-overlay');
+        
+        // Remove overlay
+        overlay.style.visibility = 'hidden';
+
+        // Show success message for 2 seconds and make it red
+        message.innerHTML = app.genericErrorMessage;
+        message.style.color = 'red';
+        message.parentElement.classList.add('show');
+
+        const hideMessage = () => {
+            message.parentElement.classList.remove('show');
+        }
+        // Adjust the time the message stays up by changing the number argument (represented in ms);
+        setTimeout(hideMessage, 2000);
+    },
+
     updateInputs: function (section) {
         // Replaces the data-input value (used to compare if the value entered is new)
         // with the value the user just entered and submitted to the server. This is
@@ -242,13 +270,26 @@ const app = {
 
         inputArry.forEach((input) => {
             input.dataset.value = input.value;
+            input.classList.remove('input-changed');
         });
     },
 
-    getQueryString: function (el) {
+    cleanupScheduler: function (section) {
+        const schedChanged = section.querySelectorAll('.sched-changed');
+        const schedMsg = section.querySelectorAll('.day-update-message.show');
+
+        [...schedChanged].forEach(div => div.classList.remove('sched-changed'));
+        [...schedMsg].forEach(div => div.classList.remove('show'));
+
+        
+    },
+
+    getChangesObject: function (el) {
+        // Grab all the changed inputs
         const changedInputs = el.closest('form').querySelectorAll('.input-changed');
         const object = {};
 
+        // Loop through, get their values and add them to the object
         for (var i = 0; i < changedInputs.length; i++) {
             const stringPath = changedInputs[i].dataset.path
             const pathArray = stringPath.replace('app.deviceData.', '').trim().split('.');
@@ -259,7 +300,7 @@ const app = {
         return object;
     },
 
-    getQueryStringScheduler: function (el) {
+    getChangesObjectScheduler: function (el) {
         // Get changed inputs that exist in the scheduler
         const changedInputsNodeList = document.getElementById('Schedule').querySelectorAll('.input-changed');
         let changedInputs = [...changedInputsNodeList];
@@ -311,7 +352,7 @@ const app = {
         return object;
     },
 
-    getQueryStringClock: function (el) {
+    getChangesObjectClock: function (el) {
         const nodeList = el.closest('form').querySelectorAll('.input-changed');
         let changedInputs = [...nodeList]
         const object = {};
@@ -332,7 +373,7 @@ const app = {
                     // Not a dynamic like the other setters, so we can hard code the pathArray here. 
                     const pathArray = ['rtc', 'time'];
                     app.deepSetObj(object, pathArray, timeTo24);
-                    // Delete any other present changed inputs from the time-block so we don't calculate the time more than once.
+                    // Delete any other changed inputs in the array that are from the time-block we just dealt with so we don't calculate the time more than once for that time-block.
                     // We 'delete' by filtering the good items into a new array and swapping that new array into changedInputs.
                     const filtered = changedInputs.filter((input) => {
                         return ![hour, minute, ampm].includes(input);
@@ -341,6 +382,7 @@ const app = {
                     changedInputs = filtered;
 
                 } else {
+                    // If it's a regular input get the value like we do in app.getChangesObject above
                     const stringPath = input.dataset.path;
                     const pathArray = stringPath.replace('app.deviceData.', '').split('.');;
                     const value = changedInputs[0].value.trim();
@@ -355,7 +397,7 @@ const app = {
     },
 
     deepSetObj: function (obj, array, value) {
-        //Recursively set nest object values
+        //Recursively set nested object values
         const [head, ...rest] = array
 
         if (rest.length <= 0) {
@@ -370,7 +412,7 @@ const app = {
     },
 
     queryObject: function (pathArray, object) {
-        // Takes path as a string
+        //Takes path as a string and retreives the value
         const [head, ...rest] = pathArray;
         let value = ''
         const  obj = object || app.deviceData;
@@ -389,15 +431,33 @@ const app = {
     },
 
     toggleSection: function (evt) {
-        
         const target = evt.target;
         const section = target.closest('.section');
         const sectionBody = section.querySelector('.section-body');
+        const icon = section.querySelector('.expand');
 
+        // Close open tab(s) if any
+        const currentOpenBody = document.querySelectorAll('.section-body.show')
+        const openArray = [...currentOpenBody];
+        openArray.forEach((body) => {
+            const openSection = body.closest('.section');
+            const openIcon = openSection.querySelector('.expand.close');
+            body.classList.remove('show');
+            openIcon.classList.remove('close');
+        })
+
+        if(openArray.includes(sectionBody)) {
+            return
+        }
+
+        // Toggle selected tab
         if(sectionBody.className.includes('show')) {
             sectionBody.classList.remove('show');
+            icon.classList.remove('close');
+            
         }else {
             sectionBody.classList.add('show');
+            icon.classList.add('close');
         }
     },
 
@@ -410,7 +470,7 @@ const app = {
             //Get the day abreviations/keys for each program
             const keys = Object.keys(program);
 
-            //Use that each key to access that program setting for that day
+            //Use that key to access that program setting for that day
             keys.forEach((day) => {
                 program[day]['index'] = index
                 //Push that program to it's correct day's array in the new programs object
@@ -438,7 +498,7 @@ const app = {
         }
 
         //Otherwise, convert to string for string manipulation methods, grab last two digits as minutes,
-        //use remaining digit(s) as hour and from hour determine if AM or PM and adjust hour to 12hr.
+        //use remaining digit(s) as hour and from hour determine if AM or PM and adjust hour to 12hr format.
         const timeString = time.toString();
         const minutesString = timeString.match(/(\d){2}$/g);
         const rawHour = parseInt(timeString.replace(minutesString, ''));
@@ -458,10 +518,14 @@ const app = {
     },
 
     convertTimeTo24: function ({ hour, minute, ampm }) {
+        // If time is AM all we need to do is add the minutes to hour
         let time = parseInt(hour + minute);
+
+        // Otherwise adjust hour to 24hr format before we add it to minutes
         if (ampm === 'pm') {
             hour = parseInt(hour) + 12;
         } else if (ampm === 'am' && hour === '12') {
+            // Handle edge case times between 00:00 and 00:59
             hour = 0
         }
 
@@ -474,12 +538,14 @@ const app = {
         let target = evt.target;
         //Get all the day divs so we can hide/show the ones not clicked
         const dayDivs = document.querySelectorAll('.day-div');
-
         //Check to see if we have the correct item by it's class name.
         //If not climb the DOM tree until we reach it.
-        if (!target.className && !target.className.includes('day-label')) {
+        if (target.className && !target.className.includes('day-label')) {
+            target = target.closest('.day-label');
+        } else if (!target.className) {
             target = target.closest('.day-label');
         }
+
         if (target.className.includes('active')) {
             //We want to close the open day and show all days
             //Remove active class from this div
@@ -530,6 +596,7 @@ const view = {
         this.populateClock();
         this.populateMostFields();
         app.filterTrack();
+
         document.getElementById('container').classList.add('show');
         document.getElementById('header').classList.add('show');
         document.getElementById('loader-div').style.display = 'none';
@@ -654,11 +721,6 @@ const view = {
         const programBodies = document.querySelectorAll('.day-body');
         // Loop through all the program bodies and populate them with the programs belonging to that body
         programBodies.forEach((progBody) => {
-            // Add new program tag
-            const addNew = document.createElement('small');
-            addNew.className = 'add-new-prog';
-            addNew.innerText = '+ Add New Program';
-
             const id = progBody.id
             // use the id to get the right programs
             const dayProgs = programs[id];
@@ -670,10 +732,6 @@ const view = {
 
                 progBody.appendChild(progDiv);
             });
-
-            if (progBody.childElementCount < 3) {
-                progBody.appendChild(addNew);
-            }
         })
     },
 

@@ -13,7 +13,7 @@ body {
     margin: 0px;
     padding: 0px;
     -webkit-box-sizing: border-box;
-            box-sizing: border-box;
+    box-sizing: border-box;
     background: whitesmoke;
 }
 
@@ -27,7 +27,7 @@ p {
     display: -ms-flexbox;
     display: flex;
     -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
+    flex-wrap: wrap;
     width: 1200px;
     margin: 0 auto;
     opacity: 0;
@@ -47,8 +47,8 @@ p {
     display: flex;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
 }
 
 /* Header ************* */
@@ -60,7 +60,7 @@ p {
     width: 100%;
     height: 60px;
     -webkit-box-shadow: 1px 1px 10px #b3b1b2;
-            box-shadow: 1px 1px 10px #b3b1b2;
+    box-shadow: 1px 1px 10px #b3b1b2;
     visibility: hidden;
     opacity: 0;
     -webkit-transition: opacity 200ms;
@@ -98,13 +98,13 @@ p {
     top: 40%;
     left: 50%;
     -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     -webkit-transform: -webkit-translate(-50%, -50%);
-            transform: -webkit-translate(-50%, -50%);
+    transform: -webkit-translate(-50%, -50%);
     transform: -moz-translate(-50%, -50%);
     -ms-transform: -ms-translate(-50%, -50%);
-        transform: -ms-translate(-50%, -50%);
+    transform: -ms-translate(-50%, -50%);
 }
 
 .loader {
@@ -199,19 +199,9 @@ p {
 
 /* Section cards ***********************/
 
-label {
-    margin-bottom: 3px;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-select {
-    margin-bottom: 4px;
-}
-
 .section {
     -webkit-box-shadow: 1px 1px 10px #b3b1b2;
-            box-shadow: 1px 1px 10px #b3b1b2;
+    box-shadow: 1px 1px 10px #b3b1b2;
     width: 350px;
     display: inline-block;
     margin: 15px 20px;
@@ -224,8 +214,8 @@ select {
     display: -ms-flexbox;
     display: flex;
     -webkit-box-pack: justify;
-        -ms-flex-pack: justify;
-            justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
 }
 
 .title {
@@ -249,11 +239,11 @@ select {
 .expand-click-div {
     display: none;
     -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
     -webkit-box-pack: center;
-        -ms-flex-pack: center;
-            justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
     background: #ffce08;
     width: 100%;
     height: 100%;
@@ -273,6 +263,24 @@ select {
 
 /* Form and inputs ****************/
 
+input {
+    border: 1px;
+    border-style: solid;
+    padding: 1px 5px;
+}
+
+label {
+    margin-bottom: 3px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+select {
+    padding: 1px 5px
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+
 .form-control {
     position: relative;
     display: -webkit-box;
@@ -280,13 +288,13 @@ select {
     display: flex;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
     margin-top: 10px;
     height: 100%;
     -webkit-box-flex: 1;
-        -ms-flex: 1 1 auto;
-            flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
 }
 
 .input-div {
@@ -296,8 +304,8 @@ select {
     display: flex;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
     margin-bottom: 10px;
 }
 
@@ -309,6 +317,25 @@ select {
 
 .time-item {
     margin-right: 16px;
+}
+
+.readonly {
+    background: #f3f3f7;
+    cursor: default;
+}
+
+.message {
+    margin-bottom: 10px;
+    visibility: hidden;
+    opacity: 0;
+    -webkit-transition: opacity 150ms linear;
+    -o-transition: opacity 150ms linear;
+    transition: opacity 150ms linear;
+}
+
+.message.show {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Buttons ********************/
@@ -338,15 +365,15 @@ select {
     display: -ms-flexbox;
     display: flex;
     -webkit-box-align: end;
-        -ms-flex-align: end;
-            align-items: flex-end;
+    -ms-flex-align: end;
+    align-items: flex-end;
     width: 100%;
     -webkit-box-pack: justify;
-        -ms-flex-pack: justify;
-            justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
     -webkit-box-flex: 1;
-        -ms-flex: 1 1 auto;
-            flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
     margin-bottom: 14px;
 }
 
@@ -369,7 +396,7 @@ select {
     padding: 12px 10px;
     color: #ffce08;
     -webkit-box-sizing: border-box;
-            box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .day-label.active {
@@ -396,12 +423,12 @@ select {
     display: flex;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
 }
 
 .prog-div {
-    padding: 5px;
+    padding: 10px;
     border: solid 1px #ffce08;
     margin-top: 8px;
 }
@@ -412,11 +439,11 @@ select {
     display: flex;
     -webkit-box-orient: horizontal;
     -webkit-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
     -webkit-box-pack: justify;
-        -ms-flex-pack: justify;
-            justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
 }
 
 .prog-settings {
@@ -424,8 +451,8 @@ select {
     display: -ms-flexbox;
     display: flex;
     -webkit-box-pack: justify;
-        -ms-flex-pack: justify;
-            justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
 }
 
 .prog-set-block {
@@ -434,8 +461,8 @@ select {
     display: flex;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
     margin-bottom: 8px;
 }
 
@@ -443,15 +470,18 @@ select {
     width: 120px;
 }
 
-.message {
+.day-update-message {
+    font-size: 12px;
+    margin-left: 10px;
+    color: white;
     visibility: hidden;
     opacity: 0;
     -webkit-transition: opacity 150ms linear;
     -o-transition: opacity 150ms linear;
-    transition: opacity 150ms linear;
+    transition: opacity 150ms linear; 
 }
 
-.message.show {
+.day-update-message.show {
     visibility: visible;
     opacity: 1;
 }
@@ -475,11 +505,17 @@ select {
     .expand {
         visibility: visible;
         cursor: pointer;
+        transition: all 200ms linear;
     }
     .expand-click-div {
+        cursor: pointer;
         display: -webkit-box;
         display: -ms-flexbox;
         display: flex;
+    }
+
+    .expand.close {
+        transform: rotate(45deg);
     }
 
     /* Hide the section bodies */
@@ -490,13 +526,19 @@ select {
         -o-transition: all 500ms ease-in-out;
         transition: all 500ms ease-in-out;
         height: 0;
-        
     }
-
     /* Section body fade down/up */
-    .section-body.show{
+    .section-body.show {
         padding: 16px;
         height: 370px;
+    }
+
+    .section-body.day.show {
+        padding: 6px;
+    }
+
+    .prog-div {
+        padding: 10px 5px;
     }
 
     /* Close the space between title bars */
@@ -504,8 +546,21 @@ select {
         margin: 3px auto;
         width: 90vw;
     }
-    /* Add some pace between the header and title bars */
+    /* Add some space between the header and title bars */
     #header {
         margin-bottom: 20px;
+    }
+
+    /* Grow the Schedule day fields to take up blank space */
+    .complete-time-block, .on-off-block, .time-element {
+        flex-grow: 1;
+    }
+
+    .on-off-block, .prog-set-block {
+        margin: 0px 5px
+    }
+
+    .complete-time-block label {
+        margin-left: 5px;
     }
 }
