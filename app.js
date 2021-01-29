@@ -202,12 +202,17 @@ const app = {
     },
 
     postSuccess: function (changes, evt, data) {
-        debugger
         const button = evt.target;
         const section = button.closest('.section');
         const overlay = section.querySelector('.submit-overlay');
         const card = section.querySelector('.section-body').id;
         const message = section.querySelector('.message small');
+
+        // Update the app.deviceData object with the new values since those are now the current device values
+        Object.assign(app.deviceData, data);
+
+        // Populate the fields again with the new data now in app.deviceData
+        app.updateInputs(section);
 
         // Return button to disabled state
         button.setAttribute('disabled', true);
@@ -216,10 +221,28 @@ const app = {
         // Remove overlay
         overlay.style.visibility = 'hidden';
 
-        // Show success message and make it green
+        // Show success message for 2 seconds and make it green
         message.innerHTML = 'Successfully ' + (button.innerHTML.includes('Save') ? 'saved!' : 'set!')
         message.style.color = 'green';
         message.parentElement.classList.add('show');
+
+        const hideMessage = () => {
+            message.parentElement.classList.remove('show');
+        }
+        // Adjust the time the message stays up by changing the number argument (represented in ms);
+        setTimeout(hideMessage, 2000);
+    },
+
+    updateInputs: function (section) {
+        // Replaces the data-input value (used to compare if the value entered is new)
+        // with the value the user just entered and submitted to the server. This is
+        // also the value that will be found in app.deviceData
+        const inputs = section.querySelectorAll('.input-changed');
+        const inputArry = [...inputs];
+
+        inputArry.forEach((input) => {
+            input.dataset.value = input.value;
+        });
     },
 
     getQueryString: function (el) {
@@ -343,6 +366,25 @@ const app = {
         } else {
             obj[head] = {};
             return app.deepSetObj(obj[head], rest, value)
+        }
+    },
+
+    queryObject: function (pathArray, object) {
+        // Takes path as a string
+        const [head, ...rest] = pathArray;
+        let value = ''
+        const  obj = object || app.deviceData;
+
+        if(rest.length <= 0) {
+            value = obj[head];
+            return value
+        } else if (obj.hasOwnProperty(head)) {
+            value = app.queryObject(rest, obj[head])
+            return value
+        } else {
+            obj[head] = {};
+            value = app.queryObject(rest, obj[head])
+            return value
         }
     },
 
@@ -488,7 +530,6 @@ const view = {
         this.populateClock();
         this.populateMostFields();
         app.filterTrack();
-        debugger
         document.getElementById('container').classList.add('show');
         document.getElementById('header').classList.add('show');
         document.getElementById('loader-div').style.display = 'none';
@@ -500,7 +541,8 @@ const view = {
 
         for (var i = 0; i < fields.length; i++) {
             const field = fields[i];
-            const value = eval(field.dataset.path);
+            const pathArray = field.dataset.path.replace('app.deviceData.', '').split('.');
+            const value = app.queryObject(pathArray);
 
             field.value = value;
             field.dataset.value = value;
@@ -509,7 +551,8 @@ const view = {
 
     populateTimer: function () {
         const timerMode = document.getElementById('timer-mode');
-        timerMode.value = eval(timerMode.dataset.path);
+        const modePathArray = timerMode.dataset.path.replace('app.deviceData.', '').split('.');
+        timerMode.value = app.queryObject(modePathArray)
 
         //Number of hours you want to show up in the timer dropdown
         const numberOfHours = 6
@@ -532,9 +575,11 @@ const view = {
             option.innerHTML = i;
             timerMin.appendChild(option);
         }
+        const hrsPathArray = timerHrs.dataset.path.replace('app.deviceData.', '').split('.');
+        timerHrs.value = app.queryObject(hrsPathArray)
 
-        timerHrs.value = eval(timerHrs.dataset.path);
-        timerMin.value = eval(timerMin.dataset.path)
+        const minPathArray = timerMin.dataset.path.replace('app.deviceData.', '').split('.');
+        timerMin.value = app.queryObject(minPathArray);
     },
 
     populateMotor: function () {
