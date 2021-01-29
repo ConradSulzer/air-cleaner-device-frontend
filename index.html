@@ -405,6 +405,42 @@
             </div>
         </div>
 
+        <!-- UV light card -->
+        <div class="section">
+            <div class="submit-overlay">
+                <div class="loader submit-loader"></div>
+            </div>
+            <div class="title-bar">
+                <p class="title">Auxiliary</p>
+                <span class="expand-div">
+                    <div class="expand-click-div">
+                        <p class="expand">+</p>
+                    </div>
+                </span>
+            </div>
+            <div class="section-body" id="aux">
+                <form class="form-control">
+                    <div class="input-div">
+                        <label for="aux-mode">Mode</label>
+                        <select id="aux-mode" class="pop" name="uv-aux" data-value="" data-path="app.deviceData.aux.mode">
+                            <option value=0>Off</option>
+                            <option value=1>Auto</option>
+                            <option value=2>5min Delay</option>
+                            <option value=3>30min Delay</option>
+                        </select>
+                    </div>
+                    <div class="btn-div">
+                        <button type="button" class="btn btn-submit-changes disabled" disabled="true">
+                            Set Aux
+                        </button>
+                        <div class="message">
+                            <small class="message-contents"></small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Diagnostic card -->
         <div class="section">
             <div class="title-bar">
