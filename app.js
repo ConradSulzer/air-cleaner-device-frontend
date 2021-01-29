@@ -188,7 +188,8 @@ const app = {
             })
             // Get the response and convert from JSON
             const data = await response.json();
-
+            console.log(data);
+            debugger
             if(data.success === true){
                 // If successful, we'll cleanup
                 app.postSuccess(objectChanges, evt);
@@ -249,8 +250,8 @@ const app = {
         // Remove overlay
         overlay.style.visibility = 'hidden';
 
-        // Show success message for 2 seconds and make it red
-        message.innerHTML = app.genericErrorMessage;
+        // Show error message for 2 seconds and make it red
+        message.innerHTML = msg;
         message.style.color = 'red';
         message.parentElement.classList.add('show');
 
