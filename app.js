@@ -15,8 +15,6 @@ const app = {
         if (result.message === 'success') {
             view.render();
             this.eventListeners();
-        } else {
-            console.log('Error fetching:', result.err);
         }
     },
 
@@ -35,7 +33,7 @@ const app = {
 
         //Watch for changes to the schedule
         const dayBodies = document.querySelectorAll('.day-body');
-        dayBodies.forEach(day => day.addEventListener('change', app.scheduleChanges))
+        dayBodies.forEach(day => day.addEventListener('change', app.checkScheduleChanges))
 
         //Watch for click on scheduler save button
         document.querySelector('.btn-sched').addEventListener('click', app.getChangedSchedule);
@@ -43,27 +41,72 @@ const app = {
         // Expand section body
         const expandClickDivs = document.querySelectorAll('.expand-click-div');
         expandClickDivs.forEach(expand => expand.addEventListener('click', app.toggleSection));
+
+        // Date check when month is changed
+        document.getElementById('clock-month').addEventListener('change', app.dateChanged);
+
+        // Date check when year is changed
+        document.getElementById('clock-year').addEventListener('change', app.dateChanged);
+
+        // Date check when day is changed
+        document.getElementById('clock-date').addEventListener('change', app.dateChanged);
+
+        // Disable inputs if mode is set to off or unless program is chosen
+        const modeSelectors = [
+            document.getElementById('mode'),
+            document.getElementById('timer-mode'),
+            document.getElementById('uv-mode'),
+            ...document.querySelectorAll('.program')
+        ]
+        modeSelectors.forEach(selector => selector.addEventListener('change', app.toggleInputs))
+
+    },
+
+    timeoutPromise: function (ms, promise) {
+        return new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+                reject(new Error('Server timeout!'))
+            }, ms);
+            promise.then(
+                (res) => {
+                    clearTimeout(timeoutId);
+                    resolve(res);
+                },
+                (err) => {
+                    clearTimeout(timeoutId);
+                    reject(err);
+                }
+            );
+        })
     },
 
     getData: async function () {
         return new Promise(async (resolve, reject) => {
+
             try {
-                const response = await fetch(this.getURL, {
-                    method: 'GET',
-                })
+                const response = await app.timeoutPromise(30000,
+                    fetch(this.getURL, {
+                        method: 'GET',
+                    })
+                );
 
                 const data = await response.json();
+
                 this.deviceData = data;
 
                 resolve({
                     message: 'success',
                     data
                 })
+
             } catch (err) {
-                reject({
-                    message: 'Error fetching',
-                    error: err
-                })
+                if (err.message === 'Server timeout!') {
+                    alert('Server Timeout!')
+                } else if (err instanceof TypeError) {
+                    alert('Server error!')
+                } else {
+                    console.log(err);
+                }
             }
         })
     },
@@ -71,25 +114,21 @@ const app = {
     checkValue: function (evt) {
         //Check to see if the value has changed and if true add "changed" class to the input
         // and activate the "Submit Changes" button
-        const input = evt.target
-
+        const input = evt.target;
         const button = input.closest('.section-body').querySelector('button');
         const currentValue = input.value;
         const oldValue = input.dataset.value;
 
         //Check to see if it was a change to the schedule
         if (input.closest('.day-div')) {
-            return app.scheduleChanges(evt);
+            return app.checkScheduleChanges(evt);
         }
 
         //Adding changed class and activating "submit changes" button
         if (currentValue !== oldValue) {
             input.classList.add('input-changed');
-            const areChangedInputs = input.closest('form').querySelectorAll('.input-changed').length
-            if (areChangedInputs === 1) {
-                button.removeAttribute('disabled');
-                button.classList.remove('disabled');
-            }
+            button.removeAttribute('disabled');
+            button.classList.remove('disabled');
         } else if (currentValue === oldValue) {
             input.classList.remove('input-changed');
             const areChangedInputs = input.closest('form').querySelectorAll('.input-changed').length
@@ -100,9 +139,10 @@ const app = {
         }
     },
 
-    scheduleChanges: function (evt) {
+    checkScheduleChanges: function (evt) {
         //Check to see if the value has changed and if true add "changed" class to the input
         // and activate the "Submit Changes" button
+
         const input = evt.target
         const dayDiv = input.closest('.day-div');
         const button = input.closest('.section-body').querySelector('button');
@@ -115,8 +155,8 @@ const app = {
         if (currentValue !== oldValue) {
             if (input.closest('onoff-block')) {
                 input.closest('.on-off-block').classList.add('time-changed');
-                
-            } 
+
+            }
 
             dayMessage.classList.add('show');
             input.classList.add('input-changed');
@@ -125,7 +165,7 @@ const app = {
             button.classList.remove('disabled')
 
         } else if (currentValue === oldValue) {
-            
+
             if (input.closest('.on-off-block')) {
                 const areStillTimeChanges = input.closest('.on-off-block').querySelectorAll('input-changed').length
                 if (areStillTimeChanges === 0) {
@@ -141,7 +181,7 @@ const app = {
                 dayDiv.classList.remove('sched-changed');
                 dayMessage.classList.remove('show');
             }
-            
+
             const areChangedProgs = document.querySelectorAll('.sched-changed').length
             if (areChangedProgs === 0) {
                 button.setAttribute('disabled', true)
@@ -168,29 +208,39 @@ const app = {
             objectChanges = app.getChangesObjectScheduler(target);
         } else if (target.id === 'set-clock') {
             objectChanges = app.getChangesObjectClock(target);
+            if (objectChanges === undefined) {
+                return
+            }
+        } else if (target.id === 'set-timer') {
+            objectChanges = app.getChangesObjectTimer(evt);
+            if (objectChanges === undefined) {
+                return
+            }
         } else {
             objectChanges = app.getChangesObject(target);
         }
 
         const json = JSON.stringify(objectChanges);
-        
         //Uncomment the below console.log(json) to see the json being sent 
         // console.log(json);
 
         try {
             // SEND POST REQUEST
-            const response = await fetch(app.setURL, {
-                method: 'POST',
-                body: json,
-                headers: {
-                    'Content-type': 'application/json'
-                }
-            })
+
+            const response = await app.timeoutPromise(30000,
+                fetch(app.setURL, {
+                    method: 'POST',
+                    body: json,
+                    headers: {
+                        'Content-type': 'application/json'
+                    }
+                })
+
+            );
+
             // Get the response and convert from JSON
             const data = await response.json();
-            console.log(data);
-            debugger
-            if(data.success === true){
+            if (data.success === true) {
                 // If successful, we'll cleanup
                 app.postSuccess(objectChanges, evt);
             } else {
@@ -200,8 +250,16 @@ const app = {
                 app.postFail(errorMessage, evt);
             }
 
-        } catch (e) {
-            console.log(e);
+        } catch (err) {
+            let errormessage = err
+            if (err.message === 'Server timeout!') {
+                errorMessage = 'Server timeout!'
+            } else if (err instanceof TypeError) {
+                errorMessage = 'Connection error!'
+            } else {
+                console.log(err);
+            }
+
             app.postFail(errorMessage, evt);
         }
     },
@@ -218,9 +276,8 @@ const app = {
         // Populate the fields again with the new data now in app.deviceData
         app.updateInputs(section);
 
-        debugger
         // If it was a schedule change, cleanup the scheduler classes
-        if(button.id === 'set-schedule'){
+        if (button.id === 'set-schedule') {
             app.cleanupScheduler(section);
         }
 
@@ -229,7 +286,7 @@ const app = {
         button.classList.add('disabled');
 
         // Remove overlay
-        overlay.style.visibility = 'hidden';
+        overlay.classList.remove('waiting');
 
         // Show success message for 2 seconds and make it green
         message.innerHTML = 'Successfully ' + (button.innerHTML.includes('Save') ? 'saved!' : 'set!')
@@ -240,15 +297,16 @@ const app = {
             message.parentElement.classList.remove('show');
         }
         // Adjust the time the message stays up by changing the number argument (represented in ms);
-        setTimeout(hideMessage, 2000);
+        setTimeout(hideMessage, 3000);
     },
 
-    postFail: function (msg, evt) {
-        const message = evt.target.closest('.section').querySelector('.message small');
-        const overlay = evt.target.closest('.section').querySelector('.submit-overlay');
-        
+    postFail: function (msg, evt, targetEl) {
+        target = evt ? evt.target : targetEl;
+        const message = target.closest('.section').querySelector('.message small');
+        const overlay = target.closest('.section').querySelector('.submit-overlay');
+
         // Remove overlay
-        overlay.style.visibility = 'hidden';
+        overlay.classList.remove('waiting');
 
         // Show error message for 2 seconds and make it red
         message.innerHTML = msg;
@@ -259,7 +317,7 @@ const app = {
             message.parentElement.classList.remove('show');
         }
         // Adjust the time the message stays up by changing the number argument (represented in ms);
-        setTimeout(hideMessage, 2000);
+        setTimeout(hideMessage, 4000);
     },
 
     updateInputs: function (section) {
@@ -282,7 +340,7 @@ const app = {
         [...schedChanged].forEach(div => div.classList.remove('sched-changed'));
         [...schedMsg].forEach(div => div.classList.remove('show'));
 
-        
+
     },
 
     getChangesObject: function (el) {
@@ -294,7 +352,16 @@ const app = {
         for (var i = 0; i < changedInputs.length; i++) {
             const stringPath = changedInputs[i].dataset.path
             const pathArray = stringPath.replace('app.deviceData.', '').trim().split('.');
-            const value = changedInputs[i].value.trim();
+            let value = changedInputs[i].value.trim();
+            
+            if(pathArray[0] !== 'wifi') {
+                if(parseInt(value)) {
+                    value = parseInt(value);
+                }else if (value === '0') {
+                    value = 0;
+                }
+            }
+
             app.deepSetObj(object, pathArray, value);
         }
 
@@ -313,7 +380,12 @@ const app = {
             if (changedInputs[0].closest('.prog-set-block')) {
                 const stringPath = progDiv.dataset.path + '.' + changedInputs[0].dataset.key;
                 const pathArray = stringPath.replace('app.deviceData.', '').split('.');;
-                const value = changedInputs[0].value.trim();
+                let value = changedInputs[0].value.trim();
+                if(parseInt(value)) {
+                    value = parseInt(value);
+                }else if(value === '0') {
+                    value = 0;
+                }
                 app.deepSetObj(object, pathArray, value);
                 // Delete this input from the array since we are finished with it
                 changedInputs.splice(0, 1);
@@ -356,7 +428,23 @@ const app = {
     getChangesObjectClock: function (el) {
         const nodeList = el.closest('form').querySelectorAll('.input-changed');
         let changedInputs = [...nodeList]
+        const dateField = document.getElementById('clock-date')
         const object = {};
+
+        // Check to see if one of the changed inputs is a date element, if so make sure the whole date is valid before submitting
+        const matchId = [dateField, document.getElementById('clock-month'), document.getElementById('clock-year')];
+        const foundDateElement = changedInputs.some(input => matchId.includes(input));
+        if (foundDateElement) {
+            // If the date is empty send an error
+            if (!parseInt(dateField.value)) {
+                app.postFail('Must pick a date!', null, dateField);
+                return
+            }
+        }
+
+
+        // do changed inputs contain a date element
+        // If so we need to check to make sure all three element make up a correct date
 
         while (changedInputs.length > 0) {
             const input = changedInputs[0];
@@ -383,18 +471,51 @@ const app = {
                     changedInputs = filtered;
 
                 } else {
-                    // If it's a regular input get the value like we do in app.getChangesObject above
+                    // It is seconds and those are submitted like a regular input
                     const stringPath = input.dataset.path;
                     const pathArray = stringPath.replace('app.deviceData.', '').split('.');;
-                    const value = changedInputs[0].value.trim();
+                    let value = changedInputs[0].value.trim();
+                    if(parseInt(value)) {
+                        value = parseInt(value);
+                    }else if (value === '0') {
+                        value = 0;
+                    }
                     app.deepSetObj(object, pathArray, value);
 
                     changedInputs.splice(0, 1);
                 }
+            } else {
+                // If it's a regular input get the value like we do in app.getChangesObject above
+                const stringPath = input.dataset.path;
+                const pathArray = stringPath.replace('app.deviceData.', '').split('.');;
+                const value = changedInputs[0].value.trim();
+                if(parseInt(value)) {
+                    value = parseInt(value);
+                }
+                app.deepSetObj(object, pathArray, value);
+
+                changedInputs.splice(0, 1);
             }
         }
 
         return object
+    },
+
+    getChangesObjectTimer: function (evt) {
+        const section = evt.target.closest('.section');
+        const mode = section.querySelector('#timer-mode');
+        const hrs = section.querySelector('#timer-hrs');
+        const min = section.querySelector('#timer-min');
+        let object = {};
+
+        if (mode.value === 'on') {
+            if (parseInt(hrs.value) === 0 && parseInt(min.value) === 0) {
+                app.postFail('No time to set!', evt)
+            } else {
+                object = app.getChangesObject(evt.target);
+                return object
+            }
+        }
     },
 
     deepSetObj: function (obj, array, value) {
@@ -416,9 +537,9 @@ const app = {
         //Takes path as a string and retreives the value
         const [head, ...rest] = pathArray;
         let value = ''
-        const  obj = object || app.deviceData;
+        const obj = object || app.deviceData;
 
-        if(rest.length <= 0) {
+        if (rest.length <= 0) {
             value = obj[head];
             return value
         } else if (obj.hasOwnProperty(head)) {
@@ -447,16 +568,16 @@ const app = {
             openIcon.classList.remove('close');
         })
 
-        if(openArray.includes(sectionBody)) {
+        if (openArray.includes(sectionBody)) {
             return
         }
 
         // Toggle selected tab
-        if(sectionBody.className.includes('show')) {
+        if (sectionBody.className.includes('show')) {
             sectionBody.classList.remove('show');
             icon.classList.remove('close');
-            
-        }else {
+
+        } else {
             sectionBody.classList.add('show');
             icon.classList.add('close');
         }
@@ -585,6 +706,95 @@ const app = {
         if (expiresOn > today) {
 
         }
+    },
+
+    dateChanged: function (evt) {
+        const month = document.getElementById('clock-month').value;
+        const year = document.getElementById('clock-year').value;
+        const dateSelect = document.getElementById('clock-date');
+        let date = dateSelect.value;
+        const dayOfTheWeek = document.getElementById('clock-dow');
+
+        // Populate date values based on the new date
+        view.changeDateOption(date);
+
+        // Set the day of the week
+        date = document.getElementById('clock-date').value;
+        let dow = ''
+        if (date === '') {
+            dow = 'Choose date';
+            dayOfTheWeek.dataset.value = 'Choose date';
+            dayOfTheWeek.classList.remove('input-changed');
+        } else {
+            dow = new Date(parseInt(year), parseInt(month) - 1, parseInt(date)).getDay();
+            dayOfTheWeek.classList.add('input-changed');
+        }
+        dayOfTheWeek.value = dow;
+    },
+
+    toggleInputs: function (evt, targetEl) {
+        let target = evt ? evt.target : targetEl;
+
+        // For wifi, timer and uv modes we need to handle one way, so filter out the 'ptogram' inputs
+        // if (target.id === 'mode' || target.id === 'timer-mode' || target.id === 'uv-mode') {
+        if (!target.className.includes('program')) {
+            // This is a timer or wifi mode
+            const form = target.closest('form');
+            formInputs = [...form.querySelectorAll('input, select')]
+            // Turn each one off that is not the target/mode input
+            formInputs.forEach((input) => {
+                if (input.id !== target.id) {
+                    if (target.value === 'off' || target.value === 'disabled' || target.value === '0') {
+                        // Target is off
+                        if (input.tagName === 'SELECT') {
+                            input.classList.add('readonly');
+                            input.setAttribute('disabled', true);
+                        } else {
+                            input.classList.add('readonly');
+                            input.setAttribute('readonly', true)
+                        }
+                    } else {
+                        if (input.tagName === 'SELECT') {
+                            input.classList.remove('readonly');
+                            input.removeAttribute('disabled', true);
+                        } else {
+                            input.classList.remove('readonly');
+                            input.removeAttribute('readonly', true)
+                        }
+                    }
+                }
+            });
+        } else {
+            // This is a program mode
+            const progDiv = target.closest('.prog-div');
+            const inputs = [...progDiv.querySelectorAll('select')]
+
+            inputs.forEach((input) => {
+                if (!input.className.includes('program')) {
+                    if (target.value !== '2') {
+                        // Target is not on program
+                        input.classList.add('readonly');
+                        input.setAttribute('disabled', true);
+                    } else {
+                        // Taregt is set to program
+                        input.classList.remove('readonly');
+                        input.removeAttribute('disabled', true);
+                    }
+                }
+            });
+        }
+    },
+
+    initializeToggleInputs: function () {
+        const targetEls = [
+            document.getElementById('mode'),
+            document.getElementById('timer-mode'),
+            ...document.querySelectorAll('.program')
+        ]
+
+        targetEls.forEach((targetEl) => {
+            app.toggleInputs(null, targetEl)
+        });
     }
 }
 
@@ -597,7 +807,10 @@ const view = {
         this.populateClock();
         this.populateMostFields();
         app.filterTrack();
-
+        app.initializeToggleInputs();
+        // Set initial date value
+        document.getElementById('clock-date').dataset.value = app.deviceData.rtc.day
+        this.changeDateOption(app.deviceData.rtc.day);
         document.getElementById('container').classList.add('show');
         document.getElementById('header').classList.add('show');
         document.getElementById('loader-div').style.display = 'none';
@@ -620,7 +833,8 @@ const view = {
     populateTimer: function () {
         const timerMode = document.getElementById('timer-mode');
         const modePathArray = timerMode.dataset.path.replace('app.deviceData.', '').split('.');
-        timerMode.value = app.queryObject(modePathArray)
+        timerMode.value = app.queryObject(modePathArray);
+        timerMode.setAttribute('data-value', timerMode.value);
 
         //Number of hours you want to show up in the timer dropdown
         const numberOfHours = 6
@@ -644,10 +858,12 @@ const view = {
             timerMin.appendChild(option);
         }
         const hrsPathArray = timerHrs.dataset.path.replace('app.deviceData.', '').split('.');
-        timerHrs.value = app.queryObject(hrsPathArray)
+        timerHrs.value = app.queryObject(hrsPathArray);
+        timerHrs.setAttribute('data-value', timerHrs.value);
 
         const minPathArray = timerMin.dataset.path.replace('app.deviceData.', '').split('.');
         timerMin.value = app.queryObject(minPathArray);
+        timerMin.setAttribute('data-value', timerMin.value);
     },
 
     populateMotor: function () {
@@ -677,16 +893,19 @@ const view = {
             oneTo59.push(i)
         }
 
-        this.createOptions(month, oneTo59.slice(1, 13));
-        this.createOptions(date, oneTo59.slice(1, 32));
         // Add more years to the list by continuing to add objects and iterating thisYear + 1. Note: the regex for the replace method will need to be changed in 100 or so years.
         this.createOptions(year, [
             { value: thisYear.toString().replace('20', ''), text: thisYear },
-            { value: (thisYear + 1).toString().replace('20', ''), text: thisYear + 1 }
-        ])
+            { value: (thisYear + 1).toString().replace('20', ''), text: thisYear + 1 },
+            { value: (thisYear + 2).toString().replace('20', ''), text: thisYear + 2 },
+            { value: (thisYear + 3).toString().replace('20', ''), text: thisYear + 3 }
+        ]);
+        this.createOptions(month, oneTo59.slice(1, 13));
+
         this.createOptions(hour, oneTo59.slice(1, 13));
         this.createOptions(min, oneTo59.slice(0));
         this.createOptions(sec, oneTo59.slice(0))
+
 
         // Need to get the 12 hr time object to assign values now that time is not coming in in parts.
         // Fix hour time to 24
@@ -697,6 +916,71 @@ const view = {
         min.dataset.value = timeObj.minutes;
         ampm.value = timeObj.ampm;
         ampm.dataset.value = timeObj.ampm;
+    },
+
+    changeDateOption: function (value) {
+        const button = document.getElementById('set-clock');
+        const dateField = document.getElementById('clock-date');
+        const month = document.getElementById('clock-month').value
+        // Months with 30 days represented by number
+        const thirtyDays = [4, 6, 9, 11];
+        // Months with 31 days represented by number
+        const thirtyOneDays = [1, 3, 5, 7, 8, 10, 12];
+        const oneTo31 = [];
+
+        for (var i = 0; i < 32; i++) {
+            oneTo31.push(i)
+        }
+
+        if (thirtyDays.includes(parseInt(month))) {
+            dateField.innerHTML = '';
+            this.createOptions(dateField, oneTo31.slice(1, 31))
+
+            if (value > 30) {
+                dateField.value = '';
+                dateField.classList.remove('input-changed');
+                button.setAttribute('disabled', true);
+                button.classList.add('disabled');
+            } else {
+                dateField.value = value;
+            }
+        } else if (thirtyOneDays.includes(parseInt(month))) {
+            dateField.innerHTML = '';
+            this.createOptions(dateField, oneTo31.slice(1));
+            dateField.value = value
+
+        } else {
+            // Get the year for determining leap year
+            const year = document.getElementById('clock-year').value
+            // Calculate if using this year Feb has 29 days. returns true or false
+            const isLeapYear = new Date(year, 1, 29).getDate() === 29;
+
+            if (isLeapYear) {
+                dateField.innerHTML = '';
+                this.createOptions(dateField, oneTo31.slice(1, 30));
+
+                if (value > 29) {
+                    dateField.value = '';
+                    dateField.classList.remove('input-changed');
+                    button.setAttribute('disabled', true);
+                    button.classList.add('disabled');
+                } else {
+                    dateField.value = value;
+                }
+            } else {
+                dateField.innerHTML = '';
+                this.createOptions(dateField, oneTo31.slice(1, 29));
+
+                if (value > 28) {
+                    dateField.value = '';
+                    dateField.classList.remove('input-changed');
+                    button.setAttribute('disabled', true);
+                    button.classList.add('disabled');
+                } else {
+                    dateField.value = value;
+                }
+            }
+        }
     },
 
     populateUv: function () {
@@ -711,6 +995,7 @@ const view = {
             option.innerHTML = i
             uvDelaySelector.appendChild(option);
         };
+
         uvDelaySelector.value = app.deviceData.uv.offDelay;
         uvDelaySelector.setAttribute('data-value', app.deviceData.uv.offDelay);
     },
@@ -791,6 +1076,7 @@ const view = {
         modeSelect.setAttribute('data-key', 'mode');
         modeSelect.setAttribute('data-ref', `${index}.mode`);
         modeSelect.setAttribute('data-value', prog.mode);
+        modeSelect.classList.add('program');
         progSetBlockMode.appendChild(modeSelect);
 
         return progDiv;

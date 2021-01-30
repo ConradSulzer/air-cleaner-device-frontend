@@ -75,10 +75,20 @@ p {
 }
 
 .slanted-header {
+    display: flex;
+    align-items: center;
     background: -o-linear-gradient(150deg, transparent 30px, #ffce08 30px);
     background: linear-gradient(300deg, transparent 30px, #ffce08 30px);
     height: 60px;
-    width: 150px;
+    width: 200px;
+}
+
+#logo {
+    width: 100%;
+}
+
+#logo img {
+    margin-left: 20px;
 }
 
 /* Loader ***************/

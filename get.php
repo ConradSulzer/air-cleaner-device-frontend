@@ -1,5 +1,6 @@
 <?php
 
+// while(true){}
 // CURRENT CONTENT OF PAGE :
 
 $allSettings['success'] = true;
@@ -133,7 +134,7 @@ $allSettings['filter']['replace']['day'] = 14; // day of replacement.. will be ~
 $allSettings['rtc']['year'] = 21;
 $allSettings['rtc']['month'] = 01;
 $allSettings['rtc']['day'] = 21;
-$allSettings['rtc']['dayOfWeek'] = 'T';
+$allSettings['rtc']['dayOfWeek'] = 2;
 $allSettings['rtc']['time'] = 1330;
 $allSettings['rtc']['second'] = 01;
 

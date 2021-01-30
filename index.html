@@ -11,7 +11,11 @@
 <body>
     <!-- Header bar -->
     <div id="header">
-        <div class="slanted-header"></div>
+        <div class="slanted-header">
+            <div id="logo">
+                <img src="./logo.png" alt="company logo">
+            </div>
+        </div>
     </div>
 
     <!-- Loading animation -->
@@ -192,7 +196,7 @@
                         </div>
                     </div>
                     <div class="btn-div">
-                        <button type="button" class="btn btn-submit-changes disabled" disabled="true">
+                        <button type="button" id="set-timer" class="btn btn-submit-changes disabled" disabled="true">
                             Set Timer
                         </button>
                         <div class="message">
@@ -311,11 +315,11 @@
                         <select id="clock-month" name="clock-month" class="pop" data-value="" data-path="app.deviceData.rtc.month"></select>
 
                         <label for="clock-date">Date</label>
-                        <select id="clock-date" name="clock-date" class="pop" data-value="" data-path="app.deviceData.rtc.day"></select>
+                        <select id="clock-date" name="clock-date" class="" data-value="" data-path="app.deviceData.rtc.day"></select>
 
                         <label for="clock-dow">Day Of The Week</label>
-                        <select id="clock-dow" name="clock-dow" data-value="select-day" data-path="app.deviceData.rtc.dayOfWeek">
-                            <option value="select-day">Select Day</option>
+                        <select id="clock-dow" name="clock-dow" class="readonly pop" data-value="" data-path="app.deviceData.rtc.dayOfWeek" disabled>
+                            <option value="Choose date">Choose date</option>
                             <option value="0">Sunday</option>
                             <option value="1">Monday</option>
                             <option value="2">Tuesday</option>
@@ -383,9 +387,9 @@
                 <form class="form-control">
                     <div class="input-div">
                         <label for="uv-mode">Mode</label>
-                        <select id="uv-mode" name="uv-mode" data-value="" data-path="app.deviceData.uv.mode">
-                            <option value=0>Off</option>
-                            <option value=1>On</option>
+                        <select id="uv-mode" name="uv-mode" class="pop" data-value="" data-path="app.deviceData.uv.mode">
+                            <option value=0>Disabled</option>
+                            <option value=1>Auto</option>
                         </select>
 
                         <label for="uv-delay">Off Delay (min)</label>
